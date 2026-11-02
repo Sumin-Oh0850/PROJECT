@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Alert, Card, Col, ListGroup, Row } from 'react-bootstrap'
+import { Card, Col, ListGroup, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
-import { SEASON, SOURCE, SPOTS } from '../data/surfGuide'
+import { SEASON, SPOTS } from '../data/surfGuide'
 
 const REGIONS = ['', '제주시', '서귀포시']
 
@@ -50,13 +50,14 @@ export default function Surf() {
                 <p className="small">{s.text}</p>
                 {s.shops.length > 0 ? (
                   <ul className="list-unstyled small mb-0">
-                    {s.shops.map(([name, addr, url]) => (
+                    {s.shops.map(([name, addr, url, sport]) => (
                       <li key={name} className="py-1 border-top">
                         {url ? (
                           <a href={url} target="_blank" rel="noopener noreferrer" className="fw-bold">{name} <i className="bi bi-box-arrow-up-right small" /></a>
                         ) : (
                           <span className="fw-bold">{name}</span>
                         )}
+                        {sport && <div className="text-primary">({sport})</div>}
                         <div className="text-muted">{addr}</div>
                       </li>
                     ))}
@@ -70,9 +71,6 @@ export default function Surf() {
         ))}
       </Row>
 
-      <Alert variant="light" className="small border">
-        <i className="bi bi-info-circle me-1" />내용은 <a href={SOURCE.url} target="_blank" rel="noopener noreferrer">{SOURCE.label}</a>를 줄여서 옮겼어요. 업체 정보는 바뀔 수 있으니 방문 전에 링크에서 확인하세요.
-      </Alert>
     </>
   )
 }

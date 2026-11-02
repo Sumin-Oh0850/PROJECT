@@ -1,5 +1,5 @@
 // 제주 서핑 가이드 데이터 — 출처: https://www.betterthansurf.com/JEJU_SURF_GUIDE_KR (설명은 줄여서 옮김)
-// 업체는 [이름, 주소, 링크]. 링크가 null 이면 링크 없이 이름만 보여 줍니다. (modoo.at 링크는 싣지 않음)
+// 업체는 [이름, 주소, 링크, 종목?]. 링크가 null 이면 링크 없이 이름만, 종목은 서핑 외 종목일 때만 적습니다. (modoo.at 링크·전화번호는 싣지 않음)
 export const SOURCE = { label: 'Better Than Surf · 제주 서핑 가이드', url: 'https://www.betterthansurf.com/JEJU_SURF_GUIDE_KR' }
 
 export const SEASON = {
@@ -20,10 +20,9 @@ export const SPOTS = [
     no: 1, name: '이호테우해수욕장', region: '제주시',
     text: '공항에서 가장 가까워 많은 서퍼가 찾는 곳. 겨울에 북쪽 스웰이 들어와 서핑하기 좋고, 목마 등대가 있는 일몰 명소입니다. 입문자부터 중상급자까지 즐길 수 있는 파도가 있습니다.',
     shops: [
-      ['이호해양레저', '제주시 테우해안로 172-5', 'http://www.eholeisure.co.kr/'],
       ['키위브라운', '제주시 오도길 4-2', 'https://www.instagram.com/kiwibrownsurf/'],
       ['노리터서핑스쿨', '제주시 현사길 21-2', null],
-      ['서프로와', '제주시 테우해안로 132 바다사랑채건물 지하1층', 'https://www.instagram.com/surfrowa/'],
+      ['서프로와', '제주시 테우해안로 132', 'https://www.instagram.com/surfrowa/'],
     ],
   },
   {
@@ -32,7 +31,6 @@ export const SPOTS = [
     shops: [
       ['제주도서핑 문서프', '제주시 애월읍 곽지7길 1', 'https://www.instagram.com/moonsurf_jeju'],
       ['바구스서핑스쿨이호', '제주시 애월읍 곽지9길 21', 'https://cafe.naver.com/bagussurf'],
-      ['노리터서프서핑스쿨 제주', '제주시 애월읍 곽지9길 39', 'https://www.instagram.com/noriter_surf_club/'],
       ['파인더웨이브', '제주시 애월읍 일주서로 6079 1,2층', 'https://www.findthewave.co.kr/'],
       ['제주도서핑 비치서프', '제주시 애월읍 곽지3길 20 1층', null],
       ['서프론트', '제주시 애월읍 곽지5길 21 1층', 'https://www.instagram.com/jejusurfront_gwakji/'],
@@ -71,13 +69,14 @@ export const SPOTS = [
       ['플레이서프', '제주시 조천읍 신북로 559', 'https://cafe.naver.com/playsurf'],
       ['범서프', '제주시 선사로8길 11', 'https://www.instagram.com/bumsurf'],
       ['서프앤조이', '제주시 선사로8길 12 1층', 'https://www.instagram.com/jejusurfing_surfnjoy'],
-      ['서프해', '제주시 설촌로12길 21-1 1층', 'https://www.instagram.com/jeju_surf_hae'],
     ],
   },
   {
     no: 7, name: '김녕해수욕장', region: '제주시',
     text: '올레길과 함께하는 야영장이 있고 화장실이 있어 야영객이 많이 찾습니다. 주차장과 야영장이 가까워 장비를 옮기기 편하지만, 그늘이 없는 것이 단점입니다.',
-    shops: [],
+    shops: [
+      ['니모스토리 카페', '제주시 구좌읍 김녕로17길 33-1', 'https://nimostory.com/', '패들보드·윈드서핑·스노클링'],
+    ],
   },
   {
     no: 8, name: '비양도·우도', region: '제주시',
@@ -89,7 +88,7 @@ export const SPOTS = [
     text: '국내 최고의 파도가 들어오는 서퍼들의 천국. 5~10월에 파도가 좋고, 초보자 해변부터 상급자용 리프 포인트까지 있습니다. 절벽을 배경으로 한 풍경이 빼어나며 샤워실 옆에 작은 캠핑장이 있습니다.',
     shops: [
       ['제주서핑스쿨', '서귀포시 중문관광로 192 1층', 'https://www.instagram.com/jejusurfingschool/'],
-      ['중문서핑스쿨', '서귀포시 중문관광로 94', 'https://www.jmsurf.com/'],
+      ['중문서핑스쿨&샵', '서귀포시 중문관광로 94', 'https://www.instagram.com/jungmunsurfing/'],
       ['제주배럴서핑스쿨', '서귀포시 색달중앙로 60', 'https://www.instagram.com/jeju_barrel_surf'],
       ['서퍼스 립컬 제주점', '서귀포시 중문관광로 305', 'https://www.instagram.com/surfers_jeju'],
       ['코코넛서프 서핑스쿨', '서귀포시 중문관광로 205 1층 1호', 'https://www.instagram.com/coconutsurf_jeju/'],
@@ -112,7 +111,15 @@ export const SPOTS = [
     no: 12, name: '신양해변', region: '서귀포시',
     text: '태풍이 접근해 다른 곳의 파도가 너무 높을 때 롱보드 타기 좋은 깨끗한 파도가 들어옵니다. 1년에 몇 번 안 되는 기회라 타이밍을 맞추기 어렵습니다.',
     shops: [
-      ['제이크서프', '서귀포시 성산읍 환해장성로 945', 'https://www.instagram.com/jakesurf_jejuisland/'],
+      ['쥬티윈드서핑클럽', '서귀포시 성산읍 신양로 111', 'https://www.facebook.com/JejuZOOTYClub/?locale=ko_KR', '윈드서핑·패들보드'],
+    ],
+  },
+  {
+    no: 13, name: '하도해수욕장', region: '제주시',
+    text: '제주시 구좌읍 하도리에 있는 해변이에요.',
+    shops: [
+      ['라인업서프 하도서핑', '제주시 구좌읍 하도13길 55', 'https://www.instagram.com/lineupsurf_jeju/'],
+      ['서프포인트 하도점', '제주시 구좌읍 해맞이해안로 1950', 'https://www.instagram.com/surfpoint__hado/'],
     ],
   },
 ]

@@ -1,11 +1,10 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import RootLayout from './layouts/RootLayout'
 import Home from './pages/Home'
 import Sites from './pages/Sites'
 import SiteDetail from './pages/SiteDetail'
 import Places from './pages/Places'
 import Surf from './pages/Surf'
-import Agent from './pages/Agent'
 import My from './pages/My'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -20,7 +19,6 @@ export const NAV_ITEMS = [
   { to: '/sites', label: '장소', icon: 'geo-alt' },
   { to: '/places', label: '관광지·해변', icon: 'umbrella' },
   { to: '/surf', label: '서핑', icon: 'water' },
-  { to: '/agent', label: 'AI 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
 ]
 
@@ -35,7 +33,7 @@ export const router = createBrowserRouter([
       { path: 'sites/:id', element: <SiteDetail /> },
       { path: 'places', element: <Places /> },
       { path: 'surf', element: <Surf /> },
-      { path: 'agent', element: <Agent /> },
+      { path: 'agent', element: <Navigate to="/" replace /> }, // AI 가이드는 이제 왼쪽 아래 버튼(창)으로 열림
       { path: 'my', element: <My /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },

@@ -4,6 +4,7 @@ import { Button, Container, Nav, Navbar, Toast, ToastContainer } from 'react-boo
 import { NAV_ITEMS } from '../router'
 import { displayName } from '../lib/auth'
 import { useAppStore } from '../store/useAppStore'
+import ChatWidget from '../components/ChatWidget'
 
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
@@ -61,6 +62,8 @@ export default function RootLayout() {
           제주대 청년도약 부트캠프 1기 · 데이터 출처: Open-Meteo(바람·파도), 한국관광공사 TourAPI, 기상청 · 판정은 학습·참고용입니다
         </Container>
       </footer>
+
+      <ChatWidget />
 
       {/* 스토어의 toast() 로 띄운 알림 */}
       <ToastContainer position="bottom-end" className="p-3 position-fixed">
