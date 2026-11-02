@@ -56,6 +56,11 @@ if (r.source !== 'tourapi') {
   const extra = r.items.filter((i) => i.extra)
   ok(base.length === 100, `TourAPI 선정 정확히 100곳 (실제 ${base.length})`)
   ok(extra.length > 0 && extra.every((i) => i.is_beach), `직접 더한 해수욕장·해변 ${extra.length}곳`)
+  if (process.env.VISITJEJU_API_KEY) {
+    const withPhoto = extra.filter((i) => i.image).length
+    ok(withPhoto >= 10, `직접 더한 해변 사진 ${withPhoto}/${extra.length}곳 (비짓제주)`)
+    ok(extra.every((i) => !i.image || i.image.startsWith('https://')), '사진 주소는 https')
+  }
   ok(r.items.filter((i) => i.is_beach).length >= 15, `해수욕장·해변 목록 ${r.items.filter((i) => i.is_beach).length}곳 (15 이상)`)
   ok(r.items.every((i) => Number.isFinite(i.lat) && Number.isFinite(i.lng) && i.lat > 33 && i.lat < 34 && i.lng > 126 && i.lng < 127.2), '모든 곳에 제주 안의 좌표가 있음')
   ok(new Set(r.items.map((i) => i.id)).size === r.items.length, '중복 없음')

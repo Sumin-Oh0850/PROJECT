@@ -32,7 +32,13 @@ export default function Home() {
     <>
       <IntroHero targetRef={contentRef} />
 
-      <div ref={contentRef} className="d-flex flex-wrap gap-2 align-items-center mb-4">
+      {/* 소개 문구: 큰 영어 제목 + 설명 (스크롤로 내려오면 가장 먼저 보이는 곳) */}
+      <section ref={contentRef} className="home-message" aria-label="소개">
+        <h2 className="home-message-title">GO WITH THE WIND, STAY SAFE</h2>
+        <p className="home-message-text">좋은 파도보다 먼저 필요한 것은 안전한 하루입니다.<br />바당타기가 제주의 바람과 파도를 읽어 드릴게요.</p>
+      </section>
+
+      <div className="d-flex flex-wrap gap-2 align-items-center mb-4">
         <span className="fw-bold me-1"><i className="bi bi-cloud-sun me-1" />오늘 날씨</span>
         <WeatherBadge place="제주시" />
         <WeatherBadge place="서귀포시" />

@@ -8,6 +8,7 @@
 //   3) 묶음 안에서는 "이미 고른 곳과 가장 먼 곳"을 차례로 고른다(farthest-point sampling).
 //      → 가까이 몰린 곳은 빠지고, 섬 전체에 퍼진다. 결과는 항상 같다(무작위 없음).
 import { cached } from './cache.js'
+import { findPhoto } from './visitjeju.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2'
 const TIMEOUT = 15_000
@@ -193,8 +194,10 @@ export async function listSpots({ n } = {}) {
     try {
       const candidates = await fetchCandidates()
       const known = new Set(candidates.map((c) => c.name))
-      const items = [...selectSpread(candidates, count), ...EXTRA_BEACHES.filter((b) => !known.has(b.name))]
+      const merged = [...selectSpread(candidates, count), ...EXTRA_BEACHES.filter((b) => !known.has(b.name))]
         .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+      // 사진이 없는 곳은 비짓제주에서 찾아 채운다 (키가 없거나 못 찾으면 그대로 빈 이미지)
+      const items = await Promise.all(merged.map(async (i) => (i.image ? i : { ...i, image: await findPhoto(i.name).catch(() => '') })))
       const tally = (key, items_) => items_.reduce((a, i) => ((a[i[key]] = (a[i[key]] ?? 0) + 1), a), {})
       const groupAll = tally('group', candidates)
       const groupSel = tally('group', items)
