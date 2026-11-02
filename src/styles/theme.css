@@ -51,6 +51,21 @@ main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 
   background-size: cover; background-position: center 60%;
   display: flex; align-items: flex-start;
 }
+.intro-hero { overflow: hidden; background: var(--sea); }
+.intro-slide { position: absolute; inset: 0; background-size: cover; opacity: 0; transition: opacity 1.2s ease; }
+.intro-slide.active { opacity: 1; }
+.intro-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 0; color: #fff; background: rgba(0,0,0,.28);
+  display: flex; align-items: center; justify-content: center; opacity: .75; transition: opacity .2s, background .2s;
+}
+.intro-arrow:hover, .intro-arrow:focus-visible { opacity: 1; background: rgba(0,0,0,.45); }
+.intro-arrow.prev { left: 1rem; } .intro-arrow.next { right: 1rem; }
+.intro-dots { position: absolute; left: 50%; bottom: 5rem; transform: translateX(-50%); z-index: 2; display: flex; gap: .5rem; }
+.intro-dots button { width: .6rem; height: .6rem; padding: 0; border-radius: 50%; border: 1.5px solid #fff; background: transparent; box-shadow: 0 0 4px rgba(0,0,0,.4); }
+.intro-dots button.on { background: #fff; }
+@media (prefers-reduced-motion: reduce) { .intro-slide { transition: none; } }
+@media (max-width: 575.98px) { .intro-arrow { display: none; } } /* 모바일은 스와이프 */
 .intro-hero-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(58,108,148,.6) 0%, rgba(58,108,148,.12) 40%, rgba(58,108,148,0) 70%, var(--sky-soft) 100%); } /* 위: 바다색 / 아래: 페이지 배경으로 녹아듦 */
 .intro-hero-text { position: relative; padding-top: clamp(2rem, 10vh, 6rem); text-shadow: 0 2px 12px rgba(0,0,0,.35); }
 .intro-hero-text h1, .intro-hero-text .lead { color: #fff; }
