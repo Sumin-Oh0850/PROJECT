@@ -23,6 +23,8 @@
 :root { --bs-body-font-family: 'NanumSquare', 'Pretendard', system-ui, sans-serif; }
 :root { --bs-nav-link-font-family: var(--bs-body-font-family); --bs-navbar-brand-font-family: var(--bs-body-font-family); }
 h1, h2, h3, h4, h5, h6, .navbar-brand, .btn, .nav-link, .navbar-nav .nav-link, .badge, .card-title { font-family: var(--bs-body-font-family); }
+/* 나눔스퀘어에는 비밀번호 칸의 마스킹 점(•) 글리프가 없어 입력해도 안 보임 → 이 칸만 시스템 글꼴 */
+input[type="password"] { font-family: system-ui, 'Segoe UI', Roboto, sans-serif; letter-spacing: .1em; }
 body { font-family: var(--bs-body-font-family); background: var(--bs-tertiary-bg); }
 
 .hero {

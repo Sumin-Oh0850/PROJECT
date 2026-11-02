@@ -57,7 +57,7 @@ export default function Signup() {
       <PageHeader icon="person-plus" title="회원가입" subtitle="이메일로 가입하고 즐겨찾기를 내 계정에 저장하세요" />
       <Card>
         <Card.Body>
-          <Form onSubmit={onSubmit} noValidate>
+          <Form method="post" onSubmit={onSubmit} noValidate>
             <Form.Group className="mb-3" controlId="su-nickname">
               <Form.Label>닉네임</Form.Label>
               <Form.Control value={form.nickname} onChange={set('nickname')} maxLength={20} autoComplete="nickname" autoFocus />

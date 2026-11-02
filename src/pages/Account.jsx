@@ -73,7 +73,7 @@ export default function Account() {
           <Card>
             <Card.Body>
               <Card.Title className="fs-6 fw-bold"><i className="bi bi-key me-2" />비밀번호 변경</Card.Title>
-              <Form onSubmit={onChangePassword} noValidate>
+              <Form method="post" onSubmit={onChangePassword} noValidate>
                 <Form.Group className="mb-3" controlId="pw-current">
                   <Form.Label>현재 비밀번호</Form.Label>
                   <Form.Control type="password" autoComplete="current-password" value={pw.current}
@@ -103,7 +103,7 @@ export default function Account() {
               <p className="small text-muted">
                 탈퇴하면 계정과 즐겨찾기가 모두 삭제되며 <b>되돌릴 수 없어요.</b>
               </p>
-              <Form onSubmit={onDelete}>
+              <Form method="post" onSubmit={onDelete}>
                 <Form.Group className="mb-3" controlId="del-confirm">
                   <Form.Label className="small">확인을 위해 <b>{CONFIRM_WORD}</b> 를 입력하세요</Form.Label>
                   <Form.Control value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" />

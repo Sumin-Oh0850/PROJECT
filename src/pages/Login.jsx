@@ -37,7 +37,7 @@ export default function Login() {
       <PageHeader icon="box-arrow-in-right" title="로그인" subtitle="즐겨찾기를 저장하려면 로그인하세요" />
       <Card>
         <Card.Body>
-          <Form onSubmit={onSubmit} noValidate>
+          <Form method="post" onSubmit={onSubmit} noValidate>
             <Form.Group className="mb-3" controlId="login-email">
               <Form.Label>이메일</Form.Label>
               <Form.Control type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
