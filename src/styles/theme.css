@@ -18,8 +18,9 @@
 .text-primary { color: var(--sea-deep) !important; }
 .border-primary { border-color: var(--sea-deep) !important; }
 .form-control:focus, .form-select:focus { border-color: var(--sky); box-shadow: 0 0 0 .25rem rgba(109,167,230,.25); }
-@font-face { font-family: 'NanumSquare'; font-weight: 400; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareR.otf') format('opentype'); }
-@font-face { font-family: 'NanumSquare'; font-weight: 700; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareB.otf') format('opentype'); }
+/* '웻'(U+C6FB) 은 나눔스퀘어에 없어서 unicode-range 로 빼고 시스템 글꼴로 보이게 함 */
+@font-face { font-family: 'NanumSquare'; font-weight: 400; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareR.otf') format('opentype'); unicode-range: U+0000-C6FA, U+C6FC-10FFFF; }
+@font-face { font-family: 'NanumSquare'; font-weight: 700; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareB.otf') format('opentype'); unicode-range: U+0000-C6FA, U+C6FC-10FFFF; }
 :root { --bs-body-font-family: 'NanumSquare', 'Pretendard', system-ui, sans-serif; }
 :root { --bs-nav-link-font-family: var(--bs-body-font-family); --bs-navbar-brand-font-family: var(--bs-body-font-family); }
 h1, h2, h3, h4, h5, h6, .navbar-brand, .btn, .nav-link, .navbar-nav .nav-link, .badge, .card-title { font-family: var(--bs-body-font-family); }
