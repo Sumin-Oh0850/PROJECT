@@ -4,7 +4,7 @@ import StatusBadge from './StatusBadge'
 import { ACTIVITY_ICON, STATUS_VARIANT, fmt } from '../lib/format'
 
 // 레저 장소 한 칸: 활동 종류 · 판정 · 핵심 수치 · 이유
-export default function SiteCard({ judgement: j, onSave }) {
+export default function SiteCard({ judgement: j, onSave, onLocate }) {
   const c = j.conditions
   return (
     <Card className={`h-100 item-card border-2 border-${STATUS_VARIANT[j.status]}`}>
@@ -26,6 +26,11 @@ export default function SiteCard({ judgement: j, onSave }) {
           <Button as={Link} to={`/sites/${j.id}`} size="sm" variant="primary" className="flex-grow-1">
             자세히 <i className="bi bi-chevron-right" />
           </Button>
+          {onLocate && (
+            <Button size="sm" variant="outline-secondary" onClick={onLocate} title="지도에서 보기" aria-label={`${j.site} 지도에서 보기`}>
+              <i className="bi bi-geo-alt" />
+            </Button>
+          )}
           {onSave && (
             <Button size="sm" variant="outline-primary" onClick={onSave} title="즐겨찾기" aria-label={`${j.site} 즐겨찾기`}>
               <i className="bi bi-star" />

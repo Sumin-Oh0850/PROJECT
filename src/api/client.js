@@ -25,9 +25,8 @@ export async function post(path, body) {
 // 동작 확인용
 export const ping = () => get('/api/hello')
 
-// STEP 2~4: 공공데이터 API
-export const fetchPlaces = (keyword = '', type = '12') =>
-  get(`/api/tour?keyword=${encodeURIComponent(keyword)}&type=${type}`)
+// 공공데이터 API
+export const fetchSpots = () => get('/api/spots') // 관광지 약 100곳 (분류·위치가 고르게)
 export const fetchWeather = (place = '제주시') =>
   get(`/api/weather?place=${encodeURIComponent(place)}`)
 
@@ -37,10 +36,9 @@ export const fetchWind = (site) => get(`/api/wind?site=${encodeURIComponent(site
 export const fetchJudge = (site) => get(`/api/judge?site=${encodeURIComponent(site)}`)
 export const fetchJudgeAll = (activity = '') => get(`/api/judge${activity ? `?activity=${activity}` : ''}`)
 
-// 주변 정보 (kind: restaurant | cafe | attraction | shower) · 제주 해변
+// 주변 정보 (kind: restaurant | cafe | attraction | shower)
 export const fetchNearby = (site, kind) =>
   get(`/api/nearby?site=${encodeURIComponent(site)}&kind=${encodeURIComponent(kind)}`)
-export const fetchBeaches = () => get('/api/beaches')
 
 // STEP 6: 에이전트
 export const askAgent = (message, history) => post('/api/agent', { message, history })

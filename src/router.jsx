@@ -3,10 +3,12 @@ import RootLayout from './layouts/RootLayout'
 import Home from './pages/Home'
 import Sites from './pages/Sites'
 import SiteDetail from './pages/SiteDetail'
-import MapPage from './pages/MapPage'
 import Places from './pages/Places'
 import Agent from './pages/Agent'
 import My from './pages/My'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Account from './pages/Account'
 import NotFound from './pages/NotFound'
 
 // ── 메뉴 목록 ────────────────────────────────────────────
@@ -15,7 +17,6 @@ import NotFound from './pages/NotFound'
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house' },
   { to: '/sites', label: '장소·판정', icon: 'geo-alt' },
-  { to: '/map', label: '지도', icon: 'map' },
   { to: '/places', label: '관광지·해변', icon: 'umbrella' },
   { to: '/agent', label: 'AI 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
@@ -30,10 +31,12 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'sites', element: <Sites /> },
       { path: 'sites/:id', element: <SiteDetail /> },
-      { path: 'map', element: <MapPage /> },
       { path: 'places', element: <Places /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },
+      { path: 'login', element: <Login /> },
+      { path: 'signup', element: <Signup /> },
+      { path: 'account', element: <Account /> },
     ],
   },
 ])

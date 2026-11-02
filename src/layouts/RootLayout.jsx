@@ -1,11 +1,19 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { Container, Nav, Navbar, Toast, ToastContainer } from 'react-bootstrap'
+import { useEffect } from 'react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Button, Container, Nav, Navbar, Toast, ToastContainer } from 'react-bootstrap'
 import { NAV_ITEMS } from '../router'
+import { displayName } from '../lib/auth'
 import { useAppStore } from '../store/useAppStore'
 
 export default function RootLayout() {
   const toasts = useAppStore((s) => s.toasts)
-  const nickname = useAppStore((s) => s.nickname)
+  const user = useAppStore((s) => s.user)
+  const authReady = useAppStore((s) => s.authReady)
+  const initAuth = useAppStore((s) => s.initAuth)
+  const signOut = useAppStore((s) => s.signOut)
+
+  // 앱이 열릴 때 한 번: 로그인 상태 확인(새로고침해도 로그인이 유지됨)
+  useEffect(() => { initAuth() }, [initAuth])
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -23,9 +31,21 @@ export default function RootLayout() {
                 </Nav.Link>
               ))}
             </Nav>
-            {nickname && (
-              <Navbar.Text><i className="bi bi-person-circle me-1" />{nickname}</Navbar.Text>
-            )}
+
+            {/* 로그인 상태에 따라: 내 정보·로그아웃 / 로그인·회원가입 (확인 중에는 깜빡이지 않게 비워 둠) */}
+            {authReady && (user ? (
+              <Nav className="align-items-md-center gap-md-2">
+                <Nav.Link as={NavLink} to="/account" eventKey="/account">
+                  <i className="bi bi-person-circle me-1" />{displayName(user)}님
+                </Nav.Link>
+                <Button size="sm" variant="outline-light" onClick={signOut}>로그아웃</Button>
+              </Nav>
+            ) : (
+              <Nav className="align-items-md-center gap-md-2">
+                <Nav.Link as={NavLink} to="/login" eventKey="/login">로그인</Nav.Link>
+                <Button as={Link} to="/signup" size="sm" variant="light">회원가입</Button>
+              </Nav>
+            ))}
           </Navbar.Collapse>
         </Container>
       </Navbar>

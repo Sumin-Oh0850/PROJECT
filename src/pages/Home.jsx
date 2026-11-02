@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Badge, Button, Card, Col, Form, Row } from 'react-bootstrap'
+import { Badge, Button, Card, Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { fetchJudgeAll, ping } from '../api/client'
+import { displayName } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
 import { STATUS_VARIANT, fmt } from '../lib/format'
 import { useAppStore } from '../store/useAppStore'
@@ -10,8 +11,8 @@ import WeatherBadge from '../components/WeatherBadge'
 
 // 홈 = 서비스 소개 + 지금 현황 + "동작 체크" 대시보드
 export default function Home() {
-  const nickname = useAppStore((s) => s.nickname)
-  const setNickname = useAppStore((s) => s.setNickname)
+  const user = useAppStore((s) => s.user)
+  const authReady = useAppStore((s) => s.authReady)
   const [db, setDb] = useState(isSupabaseReady
     ? { state: 'wait', msg: '확인 중...' }
     : { state: 'fail', msg: '.env.local 에 VITE_SUPABASE_URL / ANON_KEY 를 넣으세요' })
@@ -88,11 +89,21 @@ export default function Home() {
       </Row>
 
       <Card className="mt-4">
-        <Card.Body>
-          <Card.Title className="fs-6 fw-bold"><i className="bi bi-database me-2" />Store(Zustand) 확인</Card.Title>
-          <Form.Control placeholder="닉네임을 입력하세요 (즐겨찾기를 구분해요)" value={nickname}
-            onChange={(e) => setNickname(e.target.value)} style={{ maxWidth: 320 }} />
-          <Form.Text>입력하면 오른쪽 위 메뉴에도 바로 보이고, 새로고침해도 남아 있습니다.</Form.Text>
+        <Card.Body className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <Card.Title className="fs-6 fw-bold mb-1"><i className="bi bi-person-circle me-2" />내 계정</Card.Title>
+            <div className="small text-muted">
+              {!authReady ? '확인 중...' : user ? `${displayName(user)}님으로 로그인했어요. 즐겨찾기가 내 계정에 저장돼요.` : '로그인하면 즐겨찾기를 내 계정에 저장할 수 있어요.'}
+            </div>
+          </div>
+          {authReady && (user ? (
+            <Button as={Link} to="/account" size="sm" variant="outline-primary">내 정보</Button>
+          ) : (
+            <span className="d-flex gap-2">
+              <Button as={Link} to="/login" size="sm">로그인</Button>
+              <Button as={Link} to="/signup" size="sm" variant="outline-primary">회원가입</Button>
+            </span>
+          ))}
         </Card.Body>
       </Card>
     </>

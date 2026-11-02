@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "check:supabase": "node scripts/check-supabase.mjs",
     "test:judge": "node scripts/test-judge.mjs",
-    "test:tools": "node scripts/test-tools.mjs"
+    "test:tools": "node scripts/test-tools.mjs",
+    "test:spots": "node scripts/test-spots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

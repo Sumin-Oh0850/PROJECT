@@ -18,22 +18,80 @@ npm run dev                    # 화면 + /api 서버 함수 (http://localhost:5
 ### 환경 변수 (`.env.local`)
 | 이름 | 용도 | 없으면 |
 |---|---|---|
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | 즐겨찾기 저장 (브라우저용, 공개돼도 되는 값) | 즐겨찾기만 안 됨 |
-| `DATA_GO_KR_KEY` (또는 `TOUR_API_KEY`) | 한국관광공사·기상청 (공공데이터포털 Decoding 키, 서버 전용) | 주변 맛집·카페·관광지·해변·예보가 "정보 없음" |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | 회원·즐겨찾기 (브라우저용, 공개돼도 되는 값) | 로그인·즐겨찾기가 안 됨 |
+| `DATA_GO_KR_KEY` (또는 `TOUR_API_KEY`) | 한국관광공사·기상청 (공공데이터포털 Decoding 키, 서버 전용) | 관광지·주변 정보·예보가 "정보 없음" |
 | `ANTHROPIC_API_KEY` | AI 가이드 (서버 전용) | AI 가이드에 안내 문구 표시 |
 
 `VITE_` 가 붙은 값만 브라우저에 들어갑니다. **서버 키에는 절대 `VITE_` 를 붙이지 마세요.** 바람·파고(Open-Meteo)는 키가 필요 없습니다.
 
+## Supabase 준비 (회원 기능)
+Supabase 대시보드에서 아래 순서로 한 번씩 합니다.
+
+1. **SQL Editor** 에서 `supabase/favorites.sql` 전체 실행 — 즐겨찾기를 **로그인한 사용자별**로 저장하는 테이블과 보안 정책.
+   (닉네임 방식으로 저장했던 이전 행은 지워집니다. 여러 번 실행해도 안전)
+2. **SQL Editor** 에서 `supabase/account.sql` 전체 실행 — **회원 삭제** 함수.
+3. **Authentication → Sign In / Providers → Email** 에서 **Confirm email** 설정을 정합니다.
+   - 켜 두면: 가입 후 받은 메일의 링크를 눌러야 로그인할 수 있습니다. (화면에 "메일을 확인하세요"가 나옴)
+   - 끄면: 가입하자마자 로그인됩니다. 수업·개발 중에는 끄는 편이 편해요.
+4. `npm run check:supabase` 로 위 1·2번이 반영됐는지 확인합니다.
+
 ## 화면
 | 주소 | 내용 |
 |---|---|
-| `/` | 소개 · **지금 현황**(가능/주의/불가 개수와 장소별 한 줄) · 동작 체크(React·Supabase·/api) · 닉네임 |
-| `/sites` | **장소·판정** 목록. 서핑 / 윈드서핑 / 패러글라이딩 필터, 장소별 풍속·돌풍·파고와 판정 이유, 즐겨찾기 |
+| `/` | 소개 · **지금 현황**(가능/주의/불가 개수와 장소별 한 줄) · 동작 체크 · 내 계정 |
+| `/sites` | **장소·판정** — 판정 색 **지도**(마커 클릭 → 조건·상세) + 장소 카드, 서핑/윈드서핑/패러글라이딩 필터, "지도에서 보기" |
 | `/sites/:id` | **상세**: 판정과 이유·팁, 조건값 8가지, 오프쇼어 여부, 주변 정보 탭(맛집·카페·샤워실·관광지) |
-| `/map` | **제주 지도**(Leaflet + OpenStreetMap). 마커 색 = 판정, 팝업에서 상세로 이동 |
-| `/places` | **관광지·해변**: 제주 해변 목록과 관광지 키워드 검색 |
+| `/places` | **관광지·해변** — 제주 전역에 고루 분포한 관광지 약 100곳을 **지도 + 목록**으로. 분류(5)·해수욕장·시군구·검색 필터, 24개씩 더 보기 |
 | `/agent` | **AI 가이드**: 아래 도구로 확인해서 답하는 에이전트 |
-| `/my` | **내 즐겨찾기**: 닉네임별 Supabase 저장, 삭제 |
+| `/my` | **내 즐겨찾기**: 로그인한 내 계정에 저장한 것만, 삭제 |
+| `/login` · `/signup` | **로그인 · 회원가입** (이메일 + 비밀번호 + 닉네임) |
+| `/account` | **내 정보**: 계정 정보 · **비밀번호 변경** · **회원 탈퇴** (로그인 필요) |
+
+즐겨찾기는 로그인해야 저장됩니다. 로그아웃 상태에서 누르면 "로그인하면 즐겨찾기에 저장할 수 있어요"가 나옵니다.
+
+## 회원 기능
+| 기능 | 방식 |
+|---|---|
+| 회원가입 | Supabase Auth 이메일 가입. 닉네임은 가입 정보(`user_metadata`)에 저장. 이미 가입된 이메일·짧은 비밀번호·형식 오류는 한국어로 안내 |
+| 로그인·로그아웃 | 새로고침해도 유지(Supabase가 세션을 브라우저에 저장). 로그인이 필요해서 온 경우 로그인 뒤 원래 가려던 곳으로 이동 |
+| 비밀번호 변경 | **현재 비밀번호를 먼저 확인**한 뒤 변경 |
+| 회원 탈퇴 | `회원탈퇴` 를 직접 입력해야 버튼이 켜지고 확인창을 한 번 더 거침. 서버 함수 `delete_my_account()` 가 계정과 즐겨찾기를 삭제 |
+| 데이터 보호 | favorites 는 RLS 로 **내 행만** 보고·저장하고·지울 수 있음 (`auth.uid() = user_id`) |
+
+## 관광지 약 100곳은 어떻게 고르나요
+한국관광공사 TourAPI에 등록된 제주 관광지는 **132곳**인데 오름(산)이 37곳으로 몰려 있어서, 앞에서 100개를 자르면 한쪽으로 치우칩니다.
+그래서 `server/spots.js` 가 **분류와 위치가 고르게** 퍼지도록 100곳을 고릅니다. (`GET /api/spots`, 결과는 항상 같음)
+
+1. 분류를 5묶음(오름·산 / 숲·계곡·자연 / 해변·해안·포구 / 역사·문화 / 체험·휴양)으로 나눕니다.
+2. 묶음별 상한을 맞춥니다 — 가장 큰 묶음부터 줄여 합이 100이 되게(오름 37→20 등). 해수욕장 5곳은 항상 포함.
+3. 묶음 안에서는 "이미 고른 곳과 가장 먼 곳"을 차례로 고릅니다(farthest-point sampling). 가까이 몰린 곳은 빠지고 섬 전체에 퍼집니다.
+
+실제 결과: 오름·산 20 · 숲·계곡·자연 21 · 해변·해안·포구 20 · 역사·문화 19 · 체험·휴양 20, 서귀포시 53 · 제주시 47, 제주 전역 **28개 격자**(약 10km)에 퍼짐.
+공공데이터의 좌표 입력 실수는 걸러냅니다. (예: 영주산 경도가 `12.797…` 로 등록 → `126.797…` 로 보정, 제주 밖이면 제외)
+
+### 관광지 자료와, 더 늘리려면 필요한 자료
+**지금 쓰는 자료** — 한국관광공사 TourAPI `KorService2` 의 `areaBasedList2`(지역기반 관광정보), `areaCode=39`(제주)
+
+| 종류(contentTypeId) | 제주 등록 건수 |
+|---|---|
+| 관광지(12) | **132** ← 이 중 100곳 사용 |
+| 음식점(39) | 388 (주변 맛집·카페에 사용) |
+| 숙박(32) · 레포츠(28) · 문화시설(14) · 쇼핑(38) | 24 · 18 · 9 · 1 |
+| 축제·행사(15) · 여행코스(25) | 0 · 0 |
+
+항목: `contentid`(고유번호) · `title`(이름) · `addr1/addr2`(주소) · `mapx/mapy`(경도/위도) · `firstimage`(대표 사진) · `cat1~cat3`(분류 코드) · `sigungucode`(3 서귀포시, 4 제주시) · `tel`(관광지는 대부분 비어 있음)
+
+**한계**: 관광지는 132곳뿐이고, 설명글·운영시간·전화번호가 거의 없습니다. 상세 설명은 `contentid` 로 `detailCommon2`(개요)·`detailIntro2`(이용 시간)·`detailImage2`(사진)를 따로 불러야 합니다.
+
+**더 많은 관광지를 넣으려면 필요한 자료** (필요 순서)
+| 자료 | 얻는 것 | 필요한 것 | 비고 |
+|---|---|---|---|
+| 제주관광공사 **VisitJeju Open API** | 관광지·맛집·숙박·쇼핑·축제 수백~수천 건, 사진·소개·태그 | **별도 인증키 신청**(공공데이터포털 키와 다름) | 가장 많은 자료. 이 프로젝트에는 아직 없음 |
+| 공공데이터포털 **제주 역사문화 위치정보·일반정보**(15109570 · 15109587) | 역사문화 장소 120곳, 좌표·설명 | 공공데이터포털 키(활용 신청 승인) | 이미 호출 확인됨 |
+| **국가유산청** 제주 국가유산 API | 479건(좌표 있는 368건) | 키 불필요(XML) | 문화재라 관광지와 성격이 다름 |
+| TourAPI **상세 3종**(detailCommon2·Intro2·Image2) | 설명·이용시간·사진 | 같은 키 | 건별 호출이라 한 번 받아 저장(캐시)해 두는 것이 좋음 |
+| **해변**: 기상청 `BeachInfoservice` | 전국 해수욕장 약 330곳의 예보·파고·수온·조석 | 키 + **해수욕장 번호(beach_num) 표** | 번호별 호출. 제주 해수욕장 번호 목록이 필요 |
+| **해변**: 국립해양조사원 서핑지수·해수욕장 정보 | 서핑 스팟 5단계 지수, 해수욕장 관측 실측값 | 활용 신청 후 **요청주소** | 이 값을 판정(가능/주의/불가)에 함께 쓸 수 있음 |
 
 ## 도구 (서버 함수 = 에이전트 도구)
 | 도구 | 입력 | 출력 | 데이터 | API 주소 |
@@ -45,6 +103,7 @@ npm run dev                    # 화면 + /api 서버 함수 (http://localhost:5
 | `list_beaches` | – | 제주 해변 목록 | TourAPI | `/api/beaches` |
 | `get_weather` | place(제주시/서귀포시) | 기상청 단기예보 | 기상청 | `/api/weather` |
 | `search_tour_places` | keyword, contentTypeId | 관광지 등 검색 | TourAPI | `/api/tour` |
+| (화면용) 관광지 100곳 | n | 고루 분포한 관광지 | TourAPI | `/api/spots` |
 
 ### 판정 기준 (`server/leisure.js` 의 `RULES`)
 단위: 풍속·돌풍 m/s, 파고 m. **불가 → 주의 → 가능** 순으로 검사해 처음 걸리는 단계가 결과이고, 뇌우(천둥·번개)가 있으면 모든 활동이 **불가**입니다.
@@ -59,32 +118,33 @@ npm run dev                    # 화면 + /api 서버 함수 (http://localhost:5
 
 ## 외부 서버가 실패해도 멈추지 않아요
 - **바람·파고**: Open-Meteo 호출이 실패하면 연습용 **샘플 값**(`source: "sample"`)을 쓰고, 화면에 노란 안내가 나옵니다.
-- **맛집·카페·관광지·해변**: 키가 없거나 서버가 응답하지 않으면 가짜 데이터 대신 `source: "unavailable"` 과 이유 문구를 돌려줍니다.
+- **관광지·주변 맛집·카페·해변**: 키가 없거나 서버가 응답하지 않으면 가짜 데이터 대신 `source: "unavailable"` 과 이유 문구를 돌려줍니다.
 - **공용 샤워실**(OpenStreetMap Overpass): 제한시간 8초. 이 서버는 네트워크에 따라 응답하지 않을 수 있고, 한국은 등록 데이터가 적습니다. 공용 샤워장은 보통 여름 개장 기간에만 운영되니 그 외에는 서핑숍 샤워실을 확인하세요.
-- 같은 요청은 메모리에 캐시합니다 (바람·파고 10분, 주변 정보 30분).
+- 같은 요청은 메모리에 캐시합니다 (바람·파고 10분, 주변 정보 30분, 관광지 24시간).
 
 ## 시험·점검
 | 명령 | 내용 |
 |---|---|
 | `npm run test:judge` | 장소 목록·판정 기준 38가지를 조건값을 직접 넣어 확인 (인터넷 불필요) |
+| `npm run test:spots` | 관광지 선정 규칙(가짜 후보)과 실제 결과의 분포(100곳·분류 균형·격자 퍼짐)·좌표 보정 확인 |
 | `npm run test:tools` | 에이전트 도구 7개를 실제로 실행해 연결 확인 (인터넷 필요, Claude 키 불필요) |
-| `npm run check:supabase [-- --write]` | Supabase 연결 점검 (`--write` 는 임시 행 저장·삭제까지) |
+| `npm run check:supabase` | Supabase 연결, favorites 구조(user_id), 회원 삭제 함수가 준비됐는지 확인 |
 | `npm run lint` | 코드 점검 (스타터에서 온 "효과 안 setState" 경고는 동작에 영향 없음) |
 
 ## 구조
 ```
 api/        서버 함수 (/api/파일이름) — 비밀 키는 여기서만
 server/     외부 API 호출·판정 로직 (api/ 와 에이전트가 함께 사용)
-  sites.js        장소 목록          leisure.js   바람·판정 도구     nearby.js   주변 정보·해변
-  cache.js        메모리 캐시        agent-tools.js 에이전트 도구 정의
+  sites.js 장소 목록 · leisure.js 바람·판정 · nearby.js 주변 정보 · spots.js 관광지 100곳 선정
+  cache.js 메모리 캐시 · agent-tools.js 에이전트 도구 정의
 src/
-  main.jsx · router.jsx · layouts/ · store/(Zustand) · lib/(supabase, format) · api/client.js
-  pages/       Home Sites SiteDetail MapPage Places Agent My
-  components/  SiteCard StatusBadge SiteMap NearbyPanel ItemCard …
+  main.jsx · router.jsx · layouts/ · store/(Zustand: 회원·즐겨찾기·알림·대화) · lib/(supabase, auth, format) · api/client.js
+  pages/       Home Sites SiteDetail Places Agent My Login Signup Account
+  components/  MapView(공용 지도) SiteMap SiteCard StatusBadge NearbyPanel ItemCard …
 dev/api-plugin.js   npm run dev 용 /api 서버
-supabase/favorites.sql   즐겨찾기 테이블 (SQL Editor 에서 한 번 실행)
-scripts/    test-judge · test-tools · check-supabase
-legacy/     스타터 적용 전의 이전 작업(Python 도구 등)을 그대로 보관
+supabase/    favorites.sql(즐겨찾기) · account.sql(회원 삭제)
+scripts/     test-judge · test-spots · test-tools · check-supabase
+legacy/      스타터 적용 전의 이전 작업(Python 도구 등)을 그대로 보관
 ```
 
 ## 장소 추가
@@ -98,9 +158,6 @@ legacy/     스타터 적용 전의 이전 작업(Python 도구 등)을 그대�
 |---|---|---|
 | 0~1 | React · 라우터 · Bootstrap · Zustand · 서버 함수 `/api` | ✅ |
 | 2~4 | 관광(TourAPI) · 날씨(기상청) | ✅ |
-| 5 | Supabase 즐겨찾기 (저장 · 목록 · 중복 안내 · 삭제) | ✅ |
-| A | `list_sites` · `get_wind_gusts` · `judge_activity` (시험 38개, 실제 Open-Meteo 확인) | ✅ |
-| B | 장소·판정 목록, 상세, 홈 현황, 즐겨찾기 연결 | ✅ |
-| C | 제주 지도 (판정 색 마커) | ✅ |
-| D | 맛집·카페·관광지·해변 (TourAPI) / 공용 샤워실 (OSM, 응답 없으면 안내) | ✅ |
-| E | AI 가이드 도구 7개 연결 (`test:tools` 통과) | ✅ 도구 / ⏳ 실제 대화는 `ANTHROPIC_API_KEY` 필요 |
+| A~E | 바람·판정·장소·주변 정보·AI 도구 | ✅ (AI 실제 대화는 `ANTHROPIC_API_KEY` 필요) |
+| F | **장소·판정 지도**, **관광지·해변 지도 + 고루 분포 100곳**, 기존 지도 탭 삭제 | ✅ |
+| G | 회원가입·로그인·비밀번호 변경·회원 탈퇴 + 사용자별 즐겨찾기 | ✅ 화면·입력 검증·로그아웃 동작 / ⏳ 실제 가입·탈퇴는 SQL 실행 후 확인 |
