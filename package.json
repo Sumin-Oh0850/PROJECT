@@ -11,7 +11,8 @@
     "check:supabase": "node scripts/check-supabase.mjs",
     "test:judge": "node scripts/test-judge.mjs",
     "test:tools": "node scripts/test-tools.mjs",
-    "test:spots": "node scripts/test-spots.mjs"
+    "test:spots": "node scripts/test-spots.mjs",
+    "test:favorites": "node scripts/test-favorites.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

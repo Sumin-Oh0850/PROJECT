@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Badge, Button, Card, Col, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { fetchJudgeAll, ping } from '../api/client'
 import { displayName } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
@@ -9,27 +9,16 @@ import { useAppStore } from '../store/useAppStore'
 import StatusBadge from '../components/StatusBadge'
 import WeatherBadge from '../components/WeatherBadge'
 
-// 홈 = 서비스 소개 + 지금 현황 + "동작 체크" 대시보드
+// 홈 = 서비스 소개 + 지금 현황 + 내 계정
+// "동작 체크"(개발자용 점검 카드)는 숨겨 두었고, 주소 뒤에 ?check 를 붙이면(예: /?check) 나타납니다.
 export default function Home() {
   const user = useAppStore((s) => s.user)
   const authReady = useAppStore((s) => s.authReady)
-  const [db, setDb] = useState(isSupabaseReady
-    ? { state: 'wait', msg: '확인 중...' }
-    : { state: 'fail', msg: '.env.local 에 VITE_SUPABASE_URL / ANON_KEY 를 넣으세요' })
-  const [api, setApi] = useState({ state: 'wait', msg: '확인 중...' })
+  const [params] = useSearchParams()
   const [overview, setOverview] = useState({ state: 'wait', list: [] })
 
   useEffect(() => {
-    // ① Supabase 연결 확인
-    if (isSupabaseReady) supabase.from('favorites').select('id').limit(1).then(({ error }) =>
-      setDb(error ? { state: 'fail', msg: error.message } : { state: 'ok', msg: '연결 OK' }))
-
-    // ② 서버 함수(/api) 확인
-    ping()
-      .then((d) => setApi({ state: 'ok', msg: `OK · 공공데이터 키 ${d.hasDataKey ? '있음' : '없음'} · Claude 키 ${d.hasClaudeKey ? '있음' : '없음'}` }))
-      .catch(() => setApi({ state: 'fail', msg: '서버 함수(/api)에 연결하지 못했어요. npm run dev 로 실행했는지 확인' }))
-
-    // ③ 지금 현황: 모든 장소의 가능/주의/불가
+    // 지금 현황: 모든 장소의 가능/주의/불가
     fetchJudgeAll()
       .then((list) => setOverview({ state: 'ok', list }))
       .catch((e) => setOverview({ state: 'fail', list: [], msg: e.message }))
@@ -81,12 +70,8 @@ export default function Home() {
         </Card.Body>
       </Card>
 
-      <h5 className="fw-bold mb-3"><i className="bi bi-clipboard-check me-2" />동작 체크</h5>
-      <Row xs={1} md={3} className="g-3">
-        <Col><Check title="React · 라우터" state="ok" msg="이 화면이 보이면 OK" /></Col>
-        <Col><Check title="Supabase" {...db} /></Col>
-        <Col><Check title="서버 함수 /api" {...api} /></Col>
-      </Row>
+      {/* 개발자용 점검 카드: /?check 일 때만 보임 (이때만 점검 요청도 보냄) */}
+      {params.has('check') && <SystemCheck />}
 
       <Card className="mt-4">
         <Card.Body className="d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -106,6 +91,34 @@ export default function Home() {
           ))}
         </Card.Body>
       </Card>
+    </>
+  )
+}
+
+// 동작 체크: React·라우터, Supabase 연결, 서버 함수(/api)
+function SystemCheck() {
+  const [db, setDb] = useState(isSupabaseReady
+    ? { state: 'wait', msg: '확인 중...' }
+    : { state: 'fail', msg: '.env.local 에 VITE_SUPABASE_URL / ANON_KEY 를 넣으세요' })
+  const [api, setApi] = useState({ state: 'wait', msg: '확인 중...' })
+
+  useEffect(() => {
+    if (isSupabaseReady) supabase.from('favorites').select('id').limit(1).then(({ error }) =>
+      setDb(error ? { state: 'fail', msg: error.message } : { state: 'ok', msg: '연결 OK' }))
+
+    ping()
+      .then((d) => setApi({ state: 'ok', msg: `OK · 공공데이터 키 ${d.hasDataKey ? '있음' : '없음'} · Claude 키 ${d.hasClaudeKey ? '있음' : '없음'}` }))
+      .catch(() => setApi({ state: 'fail', msg: '서버 함수(/api)에 연결하지 못했어요. npm run dev 로 실행했는지 확인' }))
+  }, [])
+
+  return (
+    <>
+      <h5 className="fw-bold mb-3"><i className="bi bi-clipboard-check me-2" />동작 체크</h5>
+      <Row xs={1} md={3} className="g-3">
+        <Col><Check title="React · 라우터" state="ok" msg="이 화면이 보이면 OK" /></Col>
+        <Col><Check title="Supabase" {...db} /></Col>
+        <Col><Check title="서버 함수 /api" {...api} /></Col>
+      </Row>
     </>
   )
 }

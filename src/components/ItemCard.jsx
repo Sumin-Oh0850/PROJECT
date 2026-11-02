@@ -1,22 +1,26 @@
+import { useState } from 'react'
 import { Badge, Button, Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 // 관광지·해변·즐겨찾기 등 "목록의 한 칸"을 모두 이 카드 하나로 표시합니다 (재사용 컴포넌트)
+//  - image: 사진 주소. 없거나 불러오지 못하면 icon(기본 image) 아이콘 칸을 보여 줍니다.
 //  - badge/badgeColor: 종류 라벨(색을 주면 그 색으로)
 //  - onSave: 즐겨찾기 · onLocate: 지도에서 보기 · to: 상세 링크 · onRemove: 삭제
-export default function ItemCard({ title, subtitle, image, badge, badgeColor, to, onSave, onLocate, onRemove }) {
+export default function ItemCard({ title, subtitle, image, icon = 'image', badge, badgeColor, to, onSave, onLocate, onRemove }) {
+  const [failedSrc, setFailedSrc] = useState(null) // 불러오기에 실패한 주소 (같은 주소를 계속 다시 시도하지 않음)
   const hasActions = onSave || onLocate || to || onRemove
+  const showImage = image && failedSrc !== image
+
   return (
     <Card className="h-100 item-card">
-      {image
-        ? <Card.Img variant="top" src={image} alt={title} className="item-card-img" loading="lazy" />
-        : <div className="item-card-img placeholder-img"><i className="bi bi-image" /></div>}
+      {showImage
+        ? <Card.Img variant="top" src={image} alt={title} className="item-card-img" loading="lazy" onError={() => setFailedSrc(image)} />
+        : <div className="item-card-img placeholder-img" role="img" aria-label={`${title} (사진 없음)`}><i className={`bi bi-${icon}`} /></div>}
       <Card.Body className="d-flex flex-column">
-        {badge && (
-          <Badge bg={badgeColor ? undefined : 'secondary'} style={badgeColor ? { backgroundColor: badgeColor } : undefined} className="align-self-start mb-2">
-            {badge}
-          </Badge>
-        )}
+        {badge && (badgeColor
+          // Badge 의 bg-* 는 !important 라 배경색을 못 바꾸므로, 색을 줄 때는 일반 span 을 씁니다
+          ? <span className="badge align-self-start mb-2" style={{ backgroundColor: badgeColor }}>{badge}</span>
+          : <Badge bg="secondary" className="align-self-start mb-2">{badge}</Badge>)}
         <Card.Title className="fs-6 fw-bold">{title}</Card.Title>
         {subtitle && <Card.Text className="small text-muted">{subtitle}</Card.Text>}
         {hasActions && (

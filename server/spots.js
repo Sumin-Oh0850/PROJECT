@@ -41,6 +41,10 @@ const REGION = { 3: '서귀포시', 4: '제주시' } // TourAPI sigungucode (are
 
 const mapUrl = (lat, lng) => `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`
 
+// TourAPI 이미지 주소는 http:// 로 내려오는데, 사이트를 https:// 로 배포하면 브라우저가 http 이미지를 막습니다(혼합 콘텐츠).
+// 같은 서버가 https 로도 응답하므로 https 로 바꿔 줍니다.
+export const httpsUrl = (url) => (url ? String(url).replace(/^http:\/\//i, 'https://') : '')
+
 // 제주(부속 섬 포함) 좌표 범위. 이 밖의 값은 지도에 잘못 찍히므로 걸러낸다.
 const inJeju = (lat, lng) => lat > 33.0 && lat < 34.1 && lng > 126.0 && lng < 127.2
 
@@ -141,7 +145,7 @@ async function fetchCandidates() {
         category: catName,
         cat3: r.cat3,
         lat, lng,
-        image: r.firstimage ?? '',
+        image: httpsUrl(r.firstimage),
         map_url: mapUrl(lat, lng),
         is_beach: r.cat3 === BEACH_CAT3 || /해수욕장|해변/.test(r.title),
       }
