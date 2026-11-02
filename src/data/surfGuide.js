@@ -2,8 +2,6 @@
 // 업체는 [이름, 주소, 링크]. 링크가 null 이면 링크 없이 이름만 보여 줍니다. (modoo.at 링크는 싣지 않음)
 export const SOURCE = { label: 'Better Than Surf · 제주 서핑 가이드', url: 'https://www.betterthansurf.com/JEJU_SURF_GUIDE_KR' }
 
-export const SEA_TEMP_URL = 'https://www.seatemperature.org/asia/south-korea/jeju.htm'
-
 export const SEASON = {
   intro: '서핑은 바람의 영향을 많이 받고 계절마다 다른 파도를 만납니다. 여름에는 남쪽 스웰이 들어오는 서귀포, 겨울에는 북쪽 스웰이 들어오는 제주시 쪽 파도가 좋은 편입니다.',
   water: '수온은 연평균 16.2°C, 8월에는 26.5°C 입니다.',

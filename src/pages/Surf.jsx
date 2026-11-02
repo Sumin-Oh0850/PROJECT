@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Card, Col, ListGroup, Row } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
-import { SEASON, SEA_TEMP_URL, SOURCE, SPOTS } from '../data/surfGuide'
+import { SEASON, SOURCE, SPOTS } from '../data/surfGuide'
 
 const REGIONS = ['', '제주시', '서귀포시']
 
@@ -18,7 +18,7 @@ export default function Surf() {
         <Card.Body>
           <Card.Title className="fs-6 fw-bold"><i className="bi bi-calendar3 me-2" />서핑 시즌과 웻수트</Card.Title>
           <p className="mb-2">{SEASON.intro}</p>
-          <p className="mb-2">{SEASON.water} <a href={SEA_TEMP_URL} target="_blank" rel="noopener noreferrer">현재 제주 수온 확인하기</a></p>
+          <p className="mb-2">{SEASON.water}</p>
           <ListGroup horizontal="md" className="mb-3 flex-wrap">
             {SEASON.wetsuits.map(([month, suit]) => (
               <ListGroup.Item key={month} className="flex-fill"><b>{month}</b><div className="small text-muted">{suit}</div></ListGroup.Item>
