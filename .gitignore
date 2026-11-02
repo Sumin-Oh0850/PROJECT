@@ -1,4 +1,33 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 비밀 키 (절대 올리지 않기)
 .env
+.env.*
+!.env.example
+# 이름을 잘못 지은 환경 파일(env.local.env 등)도 실수로 올라가지 않게
+*.env
+env.local*
 __pycache__/
-node_modules/
-dist/
