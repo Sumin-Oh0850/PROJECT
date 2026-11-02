@@ -1,11 +1,12 @@
-// 주변 정보: 맛집 · 카페 · 관광지 (한국관광공사 TourAPI) · 공용샤워실 (OpenStreetMap Overpass) · 해변 목록
+// 주변 정보: 맛집 · 카페 (비짓제주, 실패하면 한국관광공사 TourAPI) · 관광지 (TourAPI) · 공용샤워실 (OpenStreetMap Overpass) · 해변 목록
 //
 // 외부 서버가 실패해도 화면이 멈추지 않도록 항상 같은 모양으로 답합니다.
-//   { kind, site, source: 'tourapi' | 'osm' | 'unavailable', radius_m, items: [...], note }
+//   { kind, site, source: 'visitjeju' | 'tourapi' | 'osm' | 'unavailable', radius_m, items: [...], note }
 //   - items 가 비어 있으면 note 에 이유(키 없음, 서버 응답 없음, 결과 없음 …)가 들어 있습니다.
 //   - 가짜 샘플 데이터는 만들지 않습니다. (정말 있는 곳처럼 보이면 안 되므로)
 import { getSite } from './sites.js'
 import { cached } from './cache.js'
+import { nearbyFood } from './visitjeju.js'
 
 const TOUR_BASE = 'https://apis.data.go.kr/B551011/KorService2'
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
@@ -137,6 +138,16 @@ export async function findNearby({ site: siteId, kind, radius, size = 5 } = {}) 
         }
       } catch {
         return { ...base, source: 'unavailable', items: [], note: `샤워장 정보 서버(OpenStreetMap)가 응답하지 않아요. 잠시 뒤 다시 시도해 주세요. ${SHOWER_HINT}` }
+      }
+    }
+
+    // 맛집·카페: 비짓제주를 먼저 쓰고, 실패하거나 결과가 없으면 아래 한국관광공사로 대신한다
+    if (kind === 'restaurant' || kind === 'cafe') {
+      try {
+        const items = await nearbyFood({ lat: site.lat, lng: site.lng, kind, radius: radius_m, size })
+        if (items.length) return { ...base, source: 'visitjeju', items, note: '비짓제주(제주관광공사)에 등록된 장소예요.' }
+      } catch {
+        // 비짓제주 키가 없거나 서버가 응답하지 않음 → 한국관광공사로 대신
       }
     }
 

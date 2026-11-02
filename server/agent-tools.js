@@ -30,7 +30,7 @@ export const tools = [
   },
   {
     name: 'find_nearby',
-    description: '장소 주변의 맛집·카페·관광지(한국관광공사)나 공용 샤워실(OpenStreetMap)을 가까운 순으로 찾는다',
+    description: '장소 주변의 맛집·카페(비짓제주, 안 되면 한국관광공사)·관광지(한국관광공사)나 공용 샤워실(OpenStreetMap)을 가까운 순으로 찾는다',
     input_schema: {
       type: 'object',
       properties: {

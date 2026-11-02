@@ -50,7 +50,7 @@ const judged = await run('judge_activity', { site: 'jungmun' })
 ok(['가능', '주의', '위험'].includes(judged.status) && judged.reasons?.length > 0, `judge_activity: ${judged.status} — ${judged.reasons?.join(', ')}`)
 
 const nearby = await run('find_nearby', { site: 'woljeong', kind: 'cafe' })
-ok(['tourapi', 'unavailable'].includes(nearby.source), `find_nearby(cafe): source=${nearby.source}, ${nearby.items?.length}건`)
+ok(['visitjeju', 'tourapi', 'unavailable'].includes(nearby.source), `find_nearby(cafe): source=${nearby.source}, ${nearby.items?.length}건`)
 
 const shower = await run('find_nearby', { site: 'jungmun', kind: 'shower' })
 ok(['osm', 'unavailable'].includes(shower.source) && typeof shower.note === 'string', `find_nearby(shower): source=${shower.source} (실패해도 안내 문구 포함)`)

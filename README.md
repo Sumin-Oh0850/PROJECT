@@ -103,7 +103,7 @@ Supabase 대시보드에서 아래 순서로 한 번씩 합니다.
 | `get_wind_gusts` | site | 풍속·돌풍·돌풍 편차·풍향·오프쇼어·파도·수온·기온·강수 | Open-Meteo (키 불필요) | `/api/wind` |
 | `judge_activity` | site | `status`(가능/주의/위험)·이유·팁·사용한 조건값 | 아래 판정 기준 | `/api/judge` |
 | (화면용) `forecast` | site | 앞으로 24시간의 바람·파도·물때와 시간별 가능/주의/위험 | Open-Meteo (키 불필요) | `/api/forecast` |
-| `find_nearby` | site, kind(`restaurant`·`cafe`·`attraction`·`shower`) | 가까운 순 장소 목록, 출처, 안내 문구 | TourAPI · OpenStreetMap | `/api/nearby` |
+| `find_nearby` | site, kind(`restaurant`·`cafe`·`attraction`·`shower`) | 가까운 순 장소 목록, 출처, 안내 문구 | 맛집·카페: 비짓제주(안 되면 TourAPI) · 관광지: TourAPI · 샤워실: OpenStreetMap | `/api/nearby` |
 | `list_beaches` | – | 제주 해변 목록 | TourAPI | `/api/beaches` |
 | `get_weather` | place(제주시/서귀포시) | 기상청 단기예보 | 기상청 | `/api/weather` |
 | `search_tour_places` | keyword, contentTypeId | 관광지 등 검색 | TourAPI | `/api/tour` |
