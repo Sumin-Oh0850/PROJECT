@@ -18,13 +18,27 @@
 .text-primary { color: var(--sea-deep) !important; }
 .border-primary { border-color: var(--sea-deep) !important; }
 .form-control:focus, .form-select:focus { border-color: var(--sky); box-shadow: 0 0 0 .25rem rgba(109,167,230,.25); }
-body { font-family: 'Pretendard', system-ui, sans-serif; background: var(--bs-tertiary-bg); }
+@font-face { font-family: 'NanumSquare'; font-weight: 400; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareR.otf') format('opentype'); }
+@font-face { font-family: 'NanumSquare'; font-weight: 700; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareB.otf') format('opentype'); }
+:root { --bs-body-font-family: 'NanumSquare', 'Pretendard', system-ui, sans-serif; }
+:root { --bs-nav-link-font-family: var(--bs-body-font-family); --bs-navbar-brand-font-family: var(--bs-body-font-family); }
+h1, h2, h3, h4, h5, h6, .navbar-brand, .btn, .nav-link, .navbar-nav .nav-link, .badge, .card-title { font-family: var(--bs-body-font-family); }
+body { font-family: var(--bs-body-font-family); background: var(--bs-tertiary-bg); }
 
 .hero {
   background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
   color: #fff;
 }
 .hero h1, .hero .lead { color: #fff; }
+
+/* 메인 화면 글꼴: Freesentation Bold (파일 2.6MB 라 swap 으로 글자를 먼저 보여 주고 나중에 바꿈) */
+@font-face {
+  font-family: 'Freesentation'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('../assets/fonts/Freesentation-7Bold.ttf') format('truetype');
+}
+.intro-hero { font-family: 'Freesentation', 'Pretendard', system-ui, sans-serif; }
+.intro-hero h1, .intro-hero .btn, .intro-hero .badge, .intro-hero .intro-scroll { font-family: inherit; }
+.intro-hero h1 { font-weight: 700; letter-spacing: -.01em; }
 
 /* 홈 인트로: Container 밖으로 화면 폭 가득, 높이는 (화면 - 상단바) */
 main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 것을 잘라냄 (스크롤 컨테이너는 만들지 않음) */
