@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Card, Form, InputGroup, Spinner } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import { useAppStore } from '../store/useAppStore'
+import { cleanAnswer } from '../lib/format'
 
 export default function Agent() {
   const messages = useAppStore((s) => s.messages)
@@ -18,7 +19,7 @@ export default function Agent() {
 
   return (
     <>
-      <PageHeader icon="robot" title="AI 가이드" subtitle="장소·바람·판정·주변 정보를 도구로 확인해서 답하는 에이전트" />
+      <PageHeader icon="robot" title="AI 가이드" subtitle="장소·바람·파도·주변 정보를 직접 확인해서 답해 주는 AI 가이드" />
       <Card className="chat-box mb-3">
         <Card.Body>
           {messages.length === 0 && (
@@ -30,16 +31,10 @@ export default function Agent() {
           )}
           {messages.map((m, i) => (
             <div key={i} className={`msg ${m.role}`}>
-              {m.steps?.length > 0 && (
-                <div className="small text-muted mb-1">
-                  <i className="bi bi-tools me-1" />
-                  {m.steps.map((s) => `${s.tool}(${JSON.stringify(s.args)}) → ${s.count}건`).join(' · ')}
-                </div>
-              )}
-              {m.text}
+              {m.role === 'assistant' ? cleanAnswer(m.text) : m.text}
             </div>
           ))}
-          {loading && <div className="small text-muted"><Spinner size="sm" className="me-2" />에이전트가 도구를 사용하는 중...</div>}
+          {loading && <div className="small text-muted"><Spinner size="sm" className="me-2" />확인하는 중...</div>}
         </Card.Body>
       </Card>
       <Form onSubmit={onSubmit}>

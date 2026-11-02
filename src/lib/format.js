@@ -19,3 +19,19 @@ export const fmt = (value, unit = '') => {
 }
 
 export const isSample = (judgement) => judgement?.conditions?.source === 'sample'
+
+// AI 답변을 보기 좋게 다듬는다 (모델이 지시를 어겨도 화면은 깔끔하게)
+//  - 마크다운 기호(*, #, 줄 앞의 "- ") 제거
+//  - "지금(14:15 기준)" → "현재", 단독 "(14:15 기준)" 제거
+//  - "판정" 단어 제거
+export function cleanAnswer(text = '') {
+  return String(text)
+    .replace(/지금\s*\(\s*\d{1,2}:\d{2}\s*기준\s*\)/g, '현재')
+    .replace(/\s*\(\s*\d{1,2}:\d{2}\s*기준\s*\)/g, '')
+    .replace(/[*#]+/g, '')
+    .replace(/(^|\s)-\s+(?=\S)/g, '$1')
+    .replace(/이\s*판정은\s*학습·참고용이니\s*(실제\s*)?/g, '')
+    .replace(/\s*판정[은는이가을를의도만]?(?=\s|[.,!?]|$)/g, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
+}
