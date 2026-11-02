@@ -34,6 +34,7 @@ export const fetchWeather = (place = '제주시') =>
 export const fetchSites = (activity = '') => get(`/api/sites${activity ? `?activity=${activity}` : ''}`)
 export const fetchWind = (site) => get(`/api/wind?site=${encodeURIComponent(site)}`)
 export const fetchJudge = (site) => get(`/api/judge?site=${encodeURIComponent(site)}`)
+export const fetchForecast = (site) => get(`/api/forecast?site=${encodeURIComponent(site)}`)
 export const fetchJudgeAll = (activity = '') => get(`/api/judge${activity ? `?activity=${activity}` : ''}`)
 
 // 주변 정보 (kind: restaurant | cafe | attraction | shower)

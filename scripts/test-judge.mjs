@@ -1,6 +1,6 @@
 // 판정 기준(judge_activity) 시험:  npm run test:judge
 // 조건값을 직접 넣어 보므로 외부 API 없이 항상 같은 결과가 나옵니다.
-import { isOffshore, judgeActivity, listSites } from '../server/leisure.js'
+import { isOffshore, judgeActivity, judgeConditions, getForecast, listSites } from '../server/leisure.js'
 
 let failed = 0
 function expect(name, actual, wanted) {
@@ -68,6 +68,18 @@ expect('중문: 남풍(180°) 온쇼어', isOffshore(180, 180), false)
 expect('해변 방향 없음 → null', isOffshore(null, 90), null)
 expect('오프쇼어 팁', (await judgeActivity({ site: 'jungmun', conditions: { wind_ms: 4, gust_ms: 5, wave_m: 1, offshore: true } })).tips.length, 1)
 expect('온쇼어 팁(가능일 때)', (await judgeActivity({ site: 'jungmun', conditions: { wind_ms: 4, gust_ms: 5, wave_m: 1, offshore: false } })).tips[0].startsWith('온쇼어'), true)
+
+console.log('── 시간별 판정 (순수 함수) ──')
+expect('양호 → 가능 + 이유 문구', judgeConditions('surfing', { wind_ms: 4, gust_ms: 6, wave_m: 1.2 }).reasons, ['기준 내 양호'])
+expect('위험 우선', judgeConditions('surfing', { wind_ms: 11, gust_ms: 12, wave_m: 0.1 }).status, '위험')
+expect('파도가 낮으면 주의(위험 아님)', judgeConditions('surfing', { wind_ms: 3, gust_ms: 4, wave_m: 0.2 }).status, '주의')
+expect('뇌우 → 위험', judgeConditions('surfing', { wind_ms: 1, gust_ms: 2, wave_m: 1, weather_code: 95 }).status, '위험')
+
+console.log('── 24시간 예보 ──')
+const fc = await getForecast({ site: 'jungmun' })
+expect('예보 24시간', fc.hours.length, 24)
+expect('모든 시간에 가능/주의/위험 + 이유', fc.hours.every((h) => ['가능', '주의', '위험'].includes(h.status) && h.reasons.length > 0), true)
+expect('시간 순서', fc.hours.every((h, i) => i === 0 || h.time > fc.hours[i - 1].time), true)
 
 console.log('── 오류 처리 ──')
 try {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Alert, Badge, Button, Card, Col, Row } from 'react-bootstrap'
 import { Link, useParams } from 'react-router-dom'
 import NearbyPanel from '../components/NearbyPanel'
+import SiteScene from '../components/SiteScene'
 import StatusBadge from '../components/StatusBadge'
 import { ErrorAlert, Loading } from '../components/Status'
 import { fetchJudge } from '../api/client'
@@ -64,6 +65,8 @@ export default function SiteDetail() {
           <i className="bi bi-info-circle me-2" />외부 날씨 서버에 연결하지 못해 <b>연습용 샘플 값</b>을 보여 주고 있어요. 실제 활동 판단에는 쓰지 마세요.
         </Alert>
       )}
+
+      <SiteScene conditions={c} status={j.status} activityKey={j.activity_key} />
 
       <Card className={`mb-4 border-2 border-${STATUS_VARIANT[j.status]}`}>
         <Card.Body>

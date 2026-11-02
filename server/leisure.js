@@ -185,14 +185,13 @@ const THUNDER_CODES = new Set([95, 96, 99]) // WMO 날씨 코드: 뇌우
 const OPS = { '>=': (v, l) => v >= l, '>': (v, l) => v > l, '<': (v, l) => v < l }
 const check = (value, op, limit) => value != null && OPS[op](value, limit)
 
-const CONDITION_KEYS = ['wind_ms', 'gust_ms', 'gust_spread_ms', 'wind_dir_deg', 'wave_m', 'sea_temp_c', 'precip_mm']
+const CONDITION_KEYS = ['wind_ms', 'gust_ms', 'gust_spread_ms', 'wind_dir_deg', 'wave_m', 'wave_period_s', 'sea_temp_c', 'precip_mm', 'weather_code']
 
-// conditions 를 직접 주면 그 값으로, 주지 않으면 getWindGusts() 로 조회해서 판정합니다.
-export async function judgeActivity({ site: siteId, conditions } = {}) {
-  const site = getSite(siteId)
-  const c = { ...(conditions ?? (await getWindGusts({ site: siteId }))) }
+// 조건값 한 묶음 → 가능 / 주의 / 위험 + 이유 (순수 함수: 지금 판정과 시간별 예보가 같은 기준을 씁니다)
+export function judgeConditions(activityKey, conditions) {
+  const c = { ...conditions }
   if (c.gust_spread_ms == null && c.gust_ms != null && c.wind_ms != null) c.gust_spread_ms = gustSpread(c.gust_ms, c.wind_ms)
-  const rules = RULES[site.activity]
+  const rules = RULES[activityKey]
 
   let status = '가능'
   let reasons = []
@@ -212,8 +211,17 @@ export async function judgeActivity({ site: siteId, conditions } = {}) {
   }
 
   const tips = []
-  if (site.activity === 'surfing' && c.offshore) tips.push('오프쇼어 바람: 파도 면이 깔끔해 서핑에 유리')
-  if (site.activity === 'surfing' && c.offshore === false && status === '가능') tips.push('온쇼어 바람: 파도가 흐트러질 수 있음')
+  if (activityKey === 'surfing' && c.offshore) tips.push('오프쇼어 바람: 파도 면이 깔끔해 서핑에 유리')
+  if (activityKey === 'surfing' && c.offshore === false && status === '가능') tips.push('온쇼어 바람: 파도가 흐트러질 수 있음')
+  return { status, reasons: reasons.length ? reasons : ['기준 내 양호'], tips, gust_spread_ms: c.gust_spread_ms ?? null }
+}
+
+// conditions 를 직접 주면 그 값으로, 주지 않으면 getWindGusts() 로 조회해서 판정합니다.
+export async function judgeActivity({ site: siteId, conditions } = {}) {
+  const site = getSite(siteId)
+  const c = { ...(conditions ?? (await getWindGusts({ site: siteId }))) }
+  const { status, reasons, tips, gust_spread_ms } = judgeConditions(site.activity, c)
+  c.gust_spread_ms = gust_spread_ms
 
   return {
     id: site.id,
@@ -239,4 +247,127 @@ export async function judgeActivity({ site: siteId, conditions } = {}) {
 // 모든 장소를 한 번에 판정 (홈·목록·지도 화면용). 장소별로 병렬 조회합니다.
 export async function judgeAll({ activity } = {}) {
   return Promise.all(listSites({ activity }).map((s) => judgeActivity({ site: s.id })))
+}
+
+// =================================================================
+// 시간별 예보: 앞으로 24시간의 바람·파도와 시간마다의 가능 / 주의 / 위험
+// =================================================================
+const FORECAST_HOURS = 24
+
+async function fetchHourly(lat, lng, withMarine) {
+  const windParams = new URLSearchParams({
+    latitude: lat,
+    longitude: lng,
+    current: 'temperature_2m',
+    hourly: 'temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',
+    wind_speed_unit: 'ms',
+    forecast_days: 2,
+    timezone: 'Asia/Seoul',
+  })
+  const weather = await getJson(`https://api.open-meteo.com/v1/forecast?${windParams}`)
+  let marine = null
+  if (withMarine) {
+    const marineParams = new URLSearchParams({
+      latitude: lat,
+      longitude: lng,
+      hourly: 'wave_height,wave_period,sea_surface_temperature,sea_level_height_msl',
+      forecast_days: 2,
+      timezone: 'Asia/Seoul',
+    })
+    marine = await getJson(`https://marine-api.open-meteo.com/v1/marine?${marineParams}`)
+  }
+  return { weather, marine }
+}
+
+// 시각 문자열("2026-11-02T14:00") 끼리는 글자 순서가 곧 시간 순서
+function sliceFromNow(times, nowStr) {
+  const nowHour = String(nowStr).slice(0, 13)
+  let start = times.findIndex((t) => String(t).slice(0, 13) >= nowHour)
+  if (start < 0) start = 0
+  return Array.from({ length: Math.min(FORECAST_HOURS, times.length - start) }, (_, i) => start + i)
+}
+
+// 해수면 높이(조위)가 오르는 중이면 밀물, 내리는 중이면 썰물. 값이 없으면 null
+function tideTrend(levels, i) {
+  const prev = levels?.[i - 1]
+  const next = levels?.[i + 1]
+  const a = prev ?? levels?.[i]
+  const b = next ?? levels?.[i]
+  if (a == null || b == null || a === b) return null
+  return b > a ? '밀물' : '썰물'
+}
+
+// 외부 서버가 안 될 때 쓰는 샘플 24시간 (같은 입력이면 항상 같은 값, 시간에 따라 부드럽게 변함)
+function sampleHours(site, nowStr) {
+  const w = sampleWind(site)
+  const m = site.activity === 'paragliding' ? {} : sampleMarine(site)
+  const base = new Date(`${String(nowStr).slice(0, 13)}:00:00`)
+  return Array.from({ length: FORECAST_HOURS }, (_, i) => {
+    const t = new Date(base.getTime() + i * 3_600_000)
+    const wave = Math.sin((i / FORECAST_HOURS) * Math.PI * 2)
+    const hh = String(t.getHours()).padStart(2, '0')
+    const day = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+    return {
+      time: `${day}T${hh}:00`,
+      temp_c: w.temp_c,
+      precip_mm: 0,
+      weather_code: w.weather_code,
+      wind_ms: round1(Math.max(0, w.wind_ms + wave * 1.5)),
+      gust_ms: round1(Math.max(0, w.gust_ms + wave * 2)),
+      wind_dir_deg: w.wind_dir_deg,
+      wave_m: m.wave_m == null ? null : round1(Math.max(0, m.wave_m + wave * 0.3)),
+      wave_period_s: m.wave_period_s ?? null,
+      sea_temp_c: m.sea_temp_c ?? null,
+      tide: i % 12 < 6 ? '밀물' : '썰물',
+    }
+  })
+}
+
+export async function getForecast({ site: siteId } = {}) {
+  const site = getSite(siteId)
+  return cached(`forecast:${site.id}`, WEATHER_TTL, async () => {
+    const seaActivity = site.activity !== 'paragliding'
+    let hours
+    let source = 'open-meteo'
+    try {
+      const { weather, marine } = await fetchHourly(site.lat, site.lng, seaActivity)
+      const h = weather.hourly
+      const idx = sliceFromNow(h.time, weather.current?.time ?? h.time[0])
+      const mt = marine?.hourly
+      // 파도 시간표와 바람 시간표의 시각이 같다고 가정하되, 다르면 시각으로 찾는다
+      const marineIndex = (t) => (mt ? mt.time.indexOf(t) : -1)
+      hours = idx.map((i) => {
+        const mi = marineIndex(h.time[i])
+        return {
+          time: h.time[i],
+          temp_c: h.temperature_2m[i],
+          precip_mm: h.precipitation[i],
+          weather_code: h.weather_code[i],
+          wind_ms: h.wind_speed_10m[i],
+          gust_ms: h.wind_gusts_10m[i],
+          wind_dir_deg: h.wind_direction_10m[i],
+          wave_m: mi >= 0 ? mt.wave_height[mi] : null,
+          wave_period_s: mi >= 0 ? mt.wave_period[mi] : null,
+          sea_temp_c: mi >= 0 ? mt.sea_surface_temperature[mi] : null,
+          tide: mi >= 0 ? tideTrend(mt.sea_level_height_msl, mi) : null,
+        }
+      })
+    } catch {
+      source = 'sample'
+      hours = sampleHours(site, new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 13))
+    }
+
+    return {
+      id: site.id,
+      site: site.name,
+      activity_key: site.activity,
+      source,
+      hours: hours.map((hr) => {
+        const offshore = isOffshore(site.facing_deg, hr.wind_dir_deg)
+        const spread = hr.gust_ms != null && hr.wind_ms != null ? gustSpread(hr.gust_ms, hr.wind_ms) : null
+        const j = judgeConditions(site.activity, { ...hr, offshore })
+        return { ...hr, gust_spread_ms: spread, offshore, status: j.status, reasons: j.reasons }
+      }),
+    }
+  }, { failTtlMs: 30_000 })
 }
