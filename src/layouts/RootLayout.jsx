@@ -20,7 +20,7 @@ export default function RootLayout() {
       <Navbar expand="md" bg="primary" data-bs-theme="dark" collapseOnSelect sticky="top">
         <Container>
           <Navbar.Brand as={NavLink} to="/">
-            <i className="bi bi-water me-2" />제주 서핑·레저 가이드
+            <i className="bi bi-water me-2" /><strong>바당타기</strong>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-nav" />
           <Navbar.Collapse id="main-nav">

@@ -2,8 +2,8 @@
 //
 // 핵심 도구
 //   listSites({ activity })        : 서핑·윈드서핑·패러글라이딩 장소 목록
-//   getWindGusts({ site })         : 풍속·돌풍·풍향 + 파고·수온
-//   judgeActivity({ site })        : 가능 / 주의 / 불가 판정과 이유
+//   getWindGusts({ site })         : 풍속·돌풍·풍향 + 파도·수온
+//   judgeActivity({ site })        : 가능 / 주의 / 위험 판정과 이유
 //
 // ⚠ 판정 기준은 학습·참고용 예시입니다. 실제 활동 전에는 반드시 기상특보와
 //   현장 강사·업체의 판단을 따르세요.
@@ -142,20 +142,20 @@ export async function getWindGusts({ site: siteId } = {}) {
 // 활동별 기준 [항목, 비교, 한계값, 이유] (m/s, m). 초보자 기준의 보수적인 예시값입니다.
 export const RULES = {
   surfing: {
-    불가: [
+    위험: [
       ['wind_ms', '>=', 11, '풍속 11m/s 이상'],
       ['gust_ms', '>=', 14, '돌풍 14m/s 이상'],
-      ['wave_m', '>=', 3.0, '파고 3m 이상 (초보 위험)'],
+      ['wave_m', '>=', 3.0, '파도 3m 이상 (초보 위험)'],
     ],
     주의: [
       ['wind_ms', '>=', 7, '풍속 7m/s 이상, 파도가 거칠어짐'],
       ['gust_ms', '>=', 10, '돌풍 10m/s 이상'],
-      ['wave_m', '>=', 2.0, '파고 2m 이상 (중급 이상 권장)'],
+      ['wave_m', '>=', 2.0, '파도 2m 이상 (중급 이상 권장)'],
       ['wave_m', '<', 0.3, '파도가 거의 없음 (연습만 가능)'],
     ],
   },
   windsurfing: {
-    불가: [
+    위험: [
       ['wind_ms', '>=', 14, '풍속 14m/s 이상'],
       ['gust_ms', '>=', 17, '돌풍 17m/s 이상'],
     ],
@@ -167,7 +167,7 @@ export const RULES = {
     ],
   },
   paragliding: {
-    불가: [
+    위험: [
       ['wind_ms', '>=', 8, '풍속 8m/s 이상'],
       ['gust_ms', '>=', 10, '돌풍 10m/s 이상'],
       ['gust_spread_ms', '>=', 5, '돌풍 편차 5m/s 이상 (난기류 위험)'],
@@ -197,11 +197,11 @@ export async function judgeActivity({ site: siteId, conditions } = {}) {
   let status = '가능'
   let reasons = []
   if (THUNDER_CODES.has(c.weather_code)) {
-    status = '불가'
+    status = '위험'
     reasons = ['뇌우(천둥·번개)']
   } else {
-    // 위에서부터 검사: 불가 → 주의 → 가능. 처음 걸리는 단계가 결과
-    for (const level of ['불가', '주의']) {
+    // 위에서부터 검사: 위험 → 주의 → 가능. 처음 걸리는 단계가 결과
+    for (const level of ['위험', '주의']) {
       const hits = rules[level].filter(([key, op, limit]) => check(c[key], op, limit)).map(([, , , msg]) => msg)
       if (hits.length) {
         status = level

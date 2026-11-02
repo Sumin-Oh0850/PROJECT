@@ -52,15 +52,20 @@ if (r.source !== 'tourapi') {
   console.log(`⚠️ TourAPI 를 쓸 수 없어 건너뜀 (${r.source}: ${r.note})`)
 } else {
   console.log(`   후보 ${r.candidates}곳 → 선정 ${r.count}곳`)
-  ok(r.count === 100, `정확히 100곳 (실제 ${r.count})`)
+  const base = r.items.filter((i) => !i.extra)
+  const extra = r.items.filter((i) => i.extra)
+  ok(base.length === 100, `TourAPI 선정 정확히 100곳 (실제 ${base.length})`)
+  ok(extra.length > 0 && extra.every((i) => i.is_beach), `직접 더한 해수욕장·해변 ${extra.length}곳`)
+  ok(r.items.filter((i) => i.is_beach).length >= 15, `해수욕장·해변 목록 ${r.items.filter((i) => i.is_beach).length}곳 (15 이상)`)
   ok(r.items.every((i) => Number.isFinite(i.lat) && Number.isFinite(i.lng) && i.lat > 33 && i.lat < 34 && i.lng > 126 && i.lng < 127.2), '모든 곳에 제주 안의 좌표가 있음')
   ok(new Set(r.items.map((i) => i.id)).size === r.items.length, '중복 없음')
 
   console.log('   묶음별 (선정/후보):', r.groups.map((g) => `${g.label} ${g.count}/${g.total}`).join(' · '))
-  const counts = r.groups.map((g) => g.count)
-  ok(Math.max(...counts) - Math.min(...counts) <= 3, `묶음 크기 차이 ${Math.max(...counts) - Math.min(...counts)} (3 이하) — 오름이 37→${r.groups[0].count}로 줄어 쏠림 해소`)
+  const gc = (k) => base.filter((i) => i.group === k).length
+  const counts = r.groups.map((g) => gc(g.key))
+  ok(Math.max(...counts) - Math.min(...counts) <= 3, `묶음 크기 차이 ${Math.max(...counts) - Math.min(...counts)} (3 이하) — 오름이 37→${gc("oreum")}로 줄어 쏠림 해소`)
   console.log('   시군구:', r.regions.map((g) => `${g.key} ${g.count}`).join(' · '))
-  const beachAll = r.items.filter((i) => i.cat3 === 'A01011200').length
+  const beachAll = base.filter((i) => i.cat3 === 'A01011200').length
   ok(beachAll === 5, `해수욕장 5곳 모두 포함 (실제 ${beachAll})`)
 
   // 위치 분포: 0.1°(약 10km) 격자 중 몇 칸에 곳이 있는지, 한 칸에 몇 곳까지 몰렸는지

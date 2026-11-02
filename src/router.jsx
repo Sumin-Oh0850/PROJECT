@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Sites from './pages/Sites'
 import SiteDetail from './pages/SiteDetail'
 import Places from './pages/Places'
+import Surf from './pages/Surf'
 import Agent from './pages/Agent'
 import My from './pages/My'
 import Login from './pages/Login'
@@ -16,8 +17,9 @@ import NotFound from './pages/NotFound'
 // 아이콘 이름: https://icons.getbootstrap.com
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house' },
-  { to: '/sites', label: '장소·판정', icon: 'geo-alt' },
+  { to: '/sites', label: '장소', icon: 'geo-alt' },
   { to: '/places', label: '관광지·해변', icon: 'umbrella' },
+  { to: '/surf', label: '서핑', icon: 'water' },
   { to: '/agent', label: 'AI 가이드', icon: 'robot' },
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
 ]
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'sites', element: <Sites /> },
       { path: 'sites/:id', element: <SiteDetail /> },
       { path: 'places', element: <Places /> },
+      { path: 'surf', element: <Surf /> },
       { path: 'agent', element: <Agent /> },
       { path: 'my', element: <My /> },
       { path: 'login', element: <Login /> },

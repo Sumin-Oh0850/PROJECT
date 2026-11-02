@@ -1,6 +1,6 @@
 import { judgeActivity, judgeAll } from '../server/leisure.js';
 
-// GET /api/judge?site=jungmun   → 한 장소의 가능/주의/불가 판정
+// GET /api/judge?site=jungmun   → 한 장소의 가능/주의/위험 판정
 // GET /api/judge                → 모든 장소 판정 (?activity=surfing 으로 거르기)
 export default async function handler(req, res) {
   try {

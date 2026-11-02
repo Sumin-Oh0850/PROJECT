@@ -20,12 +20,12 @@ export const tools = [
   },
   {
     name: 'get_wind_gusts',
-    description: '장소의 지금 풍속·돌풍·돌풍 편차·풍향·오프쇼어 여부·파고·수온·기온·강수를 조회한다 (단위 m/s, m)',
+    description: '장소의 지금 풍속·돌풍·돌풍 편차·풍향·오프쇼어 여부·파도·수온·기온·강수를 조회한다 (단위 m/s, m)',
     input_schema: { type: 'object', properties: { site: siteProp }, required: ['site'] },
   },
   {
     name: 'judge_activity',
-    description: '장소의 지금 조건으로 활동을 해도 되는지 가능/주의/불가로 판정하고 이유와 팁을 준다. "탈 수 있어?" 같은 질문에는 반드시 이 도구를 쓴다',
+    description: '장소의 지금 조건으로 활동을 해도 되는지 가능/주의/위험으로 판정하고 이유와 팁을 준다. "탈 수 있어?" 같은 질문에는 반드시 이 도구를 쓴다',
     input_schema: { type: 'object', properties: { site: siteProp }, required: ['site'] },
   },
   {

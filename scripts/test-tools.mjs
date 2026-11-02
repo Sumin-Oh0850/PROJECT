@@ -47,7 +47,7 @@ const wind = await run('get_wind_gusts', { site: 'jungmun' })
 ok(typeof wind.wind_ms === 'number' && typeof wind.gust_ms === 'number', `get_wind_gusts: 풍속 ${wind.wind_ms} 돌풍 ${wind.gust_ms} (source ${wind.source})`)
 
 const judged = await run('judge_activity', { site: 'jungmun' })
-ok(['가능', '주의', '불가'].includes(judged.status) && judged.reasons?.length > 0, `judge_activity: ${judged.status} — ${judged.reasons?.join(', ')}`)
+ok(['가능', '주의', '위험'].includes(judged.status) && judged.reasons?.length > 0, `judge_activity: ${judged.status} — ${judged.reasons?.join(', ')}`)
 
 const nearby = await run('find_nearby', { site: 'woljeong', kind: 'cafe' })
 ok(['tourapi', 'unavailable'].includes(nearby.source), `find_nearby(cafe): source=${nearby.source}, ${nearby.items?.length}건`)

@@ -39,7 +39,7 @@ export default function SiteDetail() {
     ['tornado', '돌풍', fmt(c.gust_ms, ' m/s')],
     ['activity', '돌풍 편차', fmt(c.gust_spread_ms, ' m/s')],
     ['compass', '풍향', windDirText(c.wind_dir_deg)],
-    ...(c.wave_m != null ? [['water', '파고', fmt(c.wave_m, ' m')]] : []),
+    ...(c.wave_m != null ? [['water', '파도', fmt(c.wave_m, ' m')]] : []),
     ...(c.sea_temp_c != null ? [['thermometer-half', '수온', fmt(c.sea_temp_c, ' ℃')]] : []),
     ['thermometer-sun', '기온', fmt(c.temp_c, ' ℃')],
     ['cloud-rain', '강수', fmt(c.precip_mm, ' mm')],

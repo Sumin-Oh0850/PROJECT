@@ -18,7 +18,7 @@ export default function SiteCard({ judgement: j, onSave, onLocate }) {
         <div className="small mb-2">
           <i className="bi bi-wind me-1" />풍속 <b>{fmt(c.wind_ms, 'm/s')}</b>
           <span className="mx-1">·</span>돌풍 <b>{fmt(c.gust_ms, 'm/s')}</b>
-          {c.wave_m != null && <><span className="mx-1">·</span><i className="bi bi-water me-1" />파고 <b>{fmt(c.wave_m, 'm')}</b></>}
+          {c.wave_m != null && <><span className="mx-1">·</span><i className="bi bi-water me-1" />파도 <b>{fmt(c.wave_m, 'm')}</b></>}
         </div>
         <div className="small text-muted mb-3">{j.reasons.join(' · ')}</div>
 

@@ -30,7 +30,7 @@ export const fetchSpots = () => get('/api/spots') // 관광지 약 100곳 (분�
 export const fetchWeather = (place = '제주시') =>
   get(`/api/weather?place=${encodeURIComponent(place)}`)
 
-// 레저 장소 · 풍속/돌풍 · 가능/주의/불가 판정
+// 레저 장소 · 풍속/돌풍 · 가능/주의/위험 판정
 export const fetchSites = (activity = '') => get(`/api/sites${activity ? `?activity=${activity}` : ''}`)
 export const fetchWind = (site) => get(`/api/wind?site=${encodeURIComponent(site)}`)
 export const fetchJudge = (site) => get(`/api/judge?site=${encodeURIComponent(site)}`)

@@ -1,4 +1,23 @@
 /* 테마 위에 덧입히는 우리 앱 스타일 — 색은 Bootstrap 변수(--bs-*)를 써서 테마를 바꿔도 어울리게 */
+/* 인트로 사진(김녕 바다)의 색에서 뽑은 기본색: 깊은 바다 #4c81aa · 바다 #598fbc · 하늘 #6da7e6 · 연한 하늘 #9ec2e7 · 숲 #445128 */
+:root {
+  --sea-deep: #3a6c94; --sea: #598fbc; --sky: #6da7e6; --sky-soft: #e8f1fb;
+  --bs-primary: var(--sea-deep); --bs-primary-rgb: 58, 108, 148;
+  --bs-info: var(--sky); --bs-info-rgb: 109, 167, 230;
+  --bs-link-color: var(--sea-deep); --bs-link-color-rgb: 58, 108, 148;
+  --bs-link-hover-color: #2d5675; --bs-link-hover-color-rgb: 45, 86, 117;
+  --bs-tertiary-bg: var(--sky-soft);
+  --bs-success: #4f7a3a; --bs-success-rgb: 79, 122, 58; /* 숲 초록 */
+}
+.btn-primary { --bs-btn-bg: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: #2d5675; --bs-btn-hover-border-color: #2d5675; --bs-btn-active-bg: #264a65; --bs-btn-active-border-color: #264a65; --bs-btn-disabled-bg: var(--sea); --bs-btn-disabled-border-color: var(--sea); }
+.btn-outline-primary { --bs-btn-color: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: var(--sea-deep); --bs-btn-hover-border-color: var(--sea-deep); --bs-btn-active-bg: var(--sea-deep); --bs-btn-active-border-color: var(--sea-deep); }
+.btn-success { --bs-btn-bg: #4f7a3a; --bs-btn-border-color: #4f7a3a; }
+.navbar .navbar-brand, .navbar .nav-link, .navbar .btn { font-weight: 700; } /* 상단 배너 글자 전체 굵게 */
+.navbar.bg-primary { background-color: var(--sea-deep) !important; }
+.bg-success { background-color: #4f7a3a !important; }
+.text-primary { color: var(--sea-deep) !important; }
+.border-primary { border-color: var(--sea-deep) !important; }
+.form-control:focus, .form-select:focus { border-color: var(--sky); box-shadow: 0 0 0 .25rem rgba(109,167,230,.25); }
 body { font-family: 'Pretendard', system-ui, sans-serif; background: var(--bs-tertiary-bg); }
 
 .hero {
@@ -6,6 +25,25 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: var(--bs-te
   color: #fff;
 }
 .hero h1, .hero .lead { color: #fff; }
+
+/* 홈 인트로: Container 밖으로 화면 폭 가득, 높이는 (화면 - 상단바) */
+main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 것을 잘라냄 (스크롤 컨테이너는 만들지 않음) */
+.intro-hero {
+  position: relative; color: #fff;
+  width: 100vw; margin-left: calc(50% - 50vw); margin-top: -1.5rem; margin-bottom: 1.5rem;
+  height: calc(100vh - 56px); height: calc(100svh - 56px); min-height: 420px;
+  background-size: cover; background-position: center 60%;
+  display: flex; align-items: flex-start;
+}
+.intro-hero-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(58,108,148,.6) 0%, rgba(58,108,148,.12) 40%, rgba(58,108,148,0) 70%, var(--sky-soft) 100%); } /* 위: 바다색 / 아래: 페이지 배경으로 녹아듦 */
+.intro-hero-text { position: relative; padding-top: clamp(2rem, 10vh, 6rem); text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.intro-hero-text h1, .intro-hero-text .lead { color: #fff; }
+.intro-scroll {
+  position: absolute; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+  background: none; border: 0; color: var(--sea-deep); font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: .25rem; animation: intro-bounce 1.6s ease-in-out infinite;
+}
+@keyframes intro-bounce { 0%,100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 8px); } }
+@media (prefers-reduced-motion: reduce) { .intro-scroll { animation: none; } }
 
 .item-card { transition: transform .15s, box-shadow .15s; }
 .item-card:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.08); }

@@ -152,6 +152,38 @@ async function fetchCandidates() {
     })
 }
 
+// 한국관광공사 "관광지"에는 해수욕장이 5곳뿐이라, 널리 알려진 제주 해수욕장·해변을 직접 더했습니다.
+// 좌표는 OpenStreetMap 에서 확인한 값입니다. 사진·분류 정보는 없어서 이미지 칸은 비어 있습니다.
+// (이미 있는 곳과 겹치지 않도록 TourAPI 의 삼양·함덕·하도·하모·논짓물은 넣지 않았습니다.)
+export const EXTRA_BEACHES = [
+  ['협재해수욕장', '제주시', '제주특별자치도 제주시 한림읍 협재리', 33.3940, 126.2400],
+  ['금능해수욕장', '제주시', '제주특별자치도 제주시 한림읍 금능리', 33.3895, 126.2356],
+  ['곽지해수욕장', '제주시', '제주특별자치도 제주시 애월읍 곽지리', 33.4505, 126.3048],
+  ['이호테우해수욕장', '제주시', '제주특별자치도 제주시 이호일동', 33.4970, 126.4550],
+  ['김녕해수욕장', '제주시', '제주특별자치도 제주시 구좌읍 김녕리', 33.5562, 126.7593],
+  ['월정리해수욕장', '제주시', '제주특별자치도 제주시 구좌읍 월정리', 33.5563, 126.7958],
+  ['세화해수욕장', '제주시', '제주특별자치도 제주시 구좌읍 세화리', 33.5250, 126.8604],
+  ['중문색달해수욕장', '서귀포시', '제주특별자치도 서귀포시 색달동', 33.2449, 126.4090],
+  ['화순금모래해수욕장', '서귀포시', '제주특별자치도 서귀포시 안덕면 화순리', 33.2404, 126.3332],
+  ['표선해수욕장', '서귀포시', '제주특별자치도 서귀포시 표선면 표선리', 33.3280, 126.8370],
+  ['소금막해변', '서귀포시', '제주특별자치도 서귀포시 표선면', 33.3312, 126.8425],
+  ['광치기해변', '서귀포시', '제주특별자치도 서귀포시 성산읍 고성리', 33.4538, 126.9255],
+].map(([name, region, address, lat, lng]) => ({
+  id: `extra-${name}`,
+  name,
+  address,
+  region,
+  group: 'coast',
+  group_label: GROUPS.coast.label,
+  category: '해수욕장',
+  cat3: BEACH_CAT3,
+  lat, lng,
+  image: '',
+  map_url: mapUrl(lat, lng),
+  is_beach: true,
+  extra: true,
+}))
+
 export async function listSpots({ n } = {}) {
   const count = Math.min(Math.max(Number(n) || 100, 10), 132)
   if (!tourKey()) {
@@ -160,7 +192,9 @@ export async function listSpots({ n } = {}) {
   return cached(`spots:${count}`, TTL, async () => {
     try {
       const candidates = await fetchCandidates()
-      const items = selectSpread(candidates, count)
+      const known = new Set(candidates.map((c) => c.name))
+      const items = [...selectSpread(candidates, count), ...EXTRA_BEACHES.filter((b) => !known.has(b.name))]
+        .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
       const tally = (key, items_) => items_.reduce((a, i) => ((a[i[key]] = (a[i[key]] ?? 0) + 1), a), {})
       const groupAll = tally('group', candidates)
       const groupSel = tally('group', items)
@@ -171,7 +205,7 @@ export async function listSpots({ n } = {}) {
         groups: Object.entries(GROUPS).map(([key, g]) => ({ key, label: g.label, color: g.color, count: groupSel[key] ?? 0, total: groupAll[key] ?? 0 })),
         regions: Object.entries(tally('region', items)).map(([key, c]) => ({ key, count: c })),
         items,
-        note: `한국관광공사 TourAPI에 등록된 제주 관광지 ${candidates.length}곳 중 분류와 위치가 고르게 퍼지도록 ${items.length}곳을 골랐어요.`,
+        note: `한국관광공사 TourAPI에 등록된 제주 관광지 ${candidates.length}곳 중 분류와 위치가 고르게 퍼지도록 ${items.length - items.filter((i) => i.extra).length}곳을 골랐고, 널리 알려진 해수욕장·해변 ${items.filter((i) => i.extra).length}곳을 더했어요.`,
       }
     } catch {
       return { source: 'unavailable', count: 0, items: [], note: '한국관광공사 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.' }

@@ -1,8 +1,8 @@
 // 화면에서 쓰는 표시용 도우미 (판정 색·아이콘, 숫자·풍향 문구)
 
-export const STATUS_VARIANT = { 가능: 'success', 주의: 'warning', 불가: 'danger' }
-export const STATUS_ICON = { 가능: 'check-circle-fill', 주의: 'exclamation-triangle-fill', 불가: 'x-octagon-fill' }
-export const STATUS_HEX = { 가능: '#2e9d57', 주의: '#e8a600', 불가: '#d64545' } // 지도 마커 색
+export const STATUS_VARIANT = { 가능: 'success', 주의: 'warning', 위험: 'danger' }
+export const STATUS_ICON = { 가능: 'check-circle-fill', 주의: 'exclamation-triangle-fill', 위험: 'x-octagon-fill' }
+export const STATUS_HEX = { 가능: '#2e9d57', 주의: '#e8a600', 위험: '#d64545' } // 지도 마커 색
 
 // bootstrap-icons 이름
 export const ACTIVITY_ICON = { surfing: 'water', windsurfing: 'wind', paragliding: 'airplane' }

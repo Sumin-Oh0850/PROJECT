@@ -47,7 +47,7 @@ export default function Sites() {
 
   return (
     <>
-      <PageHeader icon="geo-alt" title="장소·판정" subtitle="지금 바람·돌풍·파고로 서핑 / 윈드서핑 / 패러글라이딩을 해도 되는지 보여 줘요" />
+      <PageHeader icon="geo-alt" title="장소" subtitle="지금 바람·돌풍·파도로 서핑 / 윈드서핑 / 패러글라이딩을 해도 되는지 보여 줘요" />
 
       <ButtonGroup className="mb-3 flex-wrap">
         {ACTIVITIES.map((a) => (
@@ -68,7 +68,7 @@ export default function Sites() {
       {/* 지도: 마커 색 = 판정. 로딩 중에도 먼저 보여 주고, 판정이 도착하면 마커만 채웁니다 */}
       <div ref={mapBox} className="mb-3">
         <div className="d-flex flex-wrap gap-2 mb-2" aria-label="범례">
-          {['가능', '주의', '불가'].map((s) => (
+          {['가능', '주의', '위험'].map((s) => (
             <Badge key={s} bg={STATUS_VARIANT[s]} text={s === '주의' ? 'dark' : undefined} className="fw-normal">
               {s} {list.filter((j) => j.status === s).length}곳
             </Badge>
