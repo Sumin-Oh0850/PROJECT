@@ -8,9 +8,6 @@
   --bs-link-hover-color: #005fa3; --bs-link-hover-color-rgb: 0, 95, 163;
   --bs-tertiary-bg: var(--sky-soft);
   --bs-success: #22a05a; --bs-success-rgb: 34, 160, 90; /* 싱그러운 초록 */
-  /* 회색 글자 짙게: 본문 #888 → #444, 보조 글자(text-muted·small) → #5c5c5c */
-  --bs-body-color: #444444; --bs-body-color-rgb: 68, 68, 68;
-  --bs-secondary-color: #5c5c5c; --bs-secondary-color-rgb: 92, 92, 92;
 }
 .btn-primary { --bs-btn-bg: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: #005fa3; --bs-btn-hover-border-color: #005fa3; --bs-btn-active-bg: #004f89; --bs-btn-active-border-color: #004f89; --bs-btn-disabled-bg: var(--sea); --bs-btn-disabled-border-color: var(--sea); }
 .btn-outline-primary { --bs-btn-color: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: var(--sea-deep); --bs-btn-hover-border-color: var(--sea-deep); --bs-btn-active-bg: var(--sea-deep); --bs-btn-active-border-color: var(--sea-deep); }
