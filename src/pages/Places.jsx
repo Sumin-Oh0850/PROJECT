@@ -82,9 +82,18 @@ export default function Places() {
 
       {data?.source === 'tourapi' && (
         <>
-          <p className="small text-muted mb-3"><i className="bi bi-info-circle me-1" />{data.note}</p>
+          {/* 지도 */}
+          <div ref={mapBox} className="mb-4">
+            <MapView markers={markers} focus={focus} bounds={JEJU_BOUNDS} height={420} radius={8} label="제주 관광지 지도" />
+            <div className="d-flex flex-wrap gap-3 mt-2 small text-muted" aria-label="범례">
+              {data.groups.map((g) => (
+                <span key={g.key}><i className="bi bi-circle-fill me-1" style={{ color: g.color }} />{g.label}</span>
+              ))}
+            </div>
+            {!showPins && <div className="small text-muted mt-1"><i className="bi bi-info-circle me-1" />전체에서는 핀을 표시하지 않아요. 분류를 고르거나 검색하면 지도에 핀이 나와요.</div>}
+          </div>
 
-          {/* 분류 */}
+          {/* 분류 (지도 아래) */}
           <div className="d-flex flex-wrap gap-2 mb-2" role="group" aria-label="분류">
             <Chip active={group === ''} onClick={() => resetPage(setGroup)('')}>전체 {items.length}</Chip>
             {data.groups.map((g) => (
@@ -97,7 +106,7 @@ export default function Places() {
             </Chip>
           </div>
 
-          {/* 지역 + 검색 */}
+          {/* 지역 + 검색 (지도 아래) */}
           <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
             <ButtonGroup>
               {REGIONS.map((r) => (
@@ -112,17 +121,6 @@ export default function Places() {
               {q && <Button variant="outline-secondary" onClick={() => resetPage(setQ)('')} aria-label="검색어 지우기"><i className="bi bi-x" /></Button>}
             </InputGroup>
             <span className="small text-muted"><b>{filtered.length}</b>곳</span>
-          </div>
-
-          {/* 지도 */}
-          <div ref={mapBox} className="mb-4">
-            <MapView markers={markers} focus={focus} bounds={JEJU_BOUNDS} height={420} radius={8} label="제주 관광지 지도" />
-            <div className="d-flex flex-wrap gap-3 mt-2 small text-muted" aria-label="범례">
-              {data.groups.map((g) => (
-                <span key={g.key}><i className="bi bi-circle-fill me-1" style={{ color: g.color }} />{g.label}</span>
-              ))}
-            </div>
-            {!showPins && <div className="small text-muted mt-1"><i className="bi bi-info-circle me-1" />전체에서는 핀을 표시하지 않아요. 분류를 고르거나 검색하면 지도에 핀이 나와요.</div>}
           </div>
 
           {/* 목록 */}

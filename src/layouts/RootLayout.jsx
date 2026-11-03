@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router-dom'
 import { Button, Container, Nav, Navbar, Toast, ToastContainer } from 'react-bootstrap'
 import { NAV_ITEMS } from '../router'
 import { displayName } from '../lib/auth'
@@ -64,6 +64,9 @@ export default function RootLayout() {
       </footer>
 
       <ChatWidget />
+
+      {/* 메뉴로 다른 화면에 가면 맨 위에서 시작, 뒤로 가기는 보던 위치로 */}
+      <ScrollRestoration />
 
       {/* 스토어의 toast() 로 띄운 알림 */}
       <ToastContainer position="bottom-end" className="p-3 position-fixed">

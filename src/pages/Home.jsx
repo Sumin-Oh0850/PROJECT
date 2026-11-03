@@ -89,7 +89,7 @@ function SeaIndex() {
   if (sea.state === 'fail' || !sea.data.items?.length) {
     return <>{title}<Card><Card.Body><div className="text-muted small"><i className="bi bi-info-circle me-1" />{sea.data?.note ?? '바다 지수를 불러오지 못했어요.'}</div></Card.Body></Card></>
   }
-  const { items, note, date, period } = sea.data
+  const { items, date, period } = sea.data
   return (
     <>
       {title}
@@ -115,7 +115,6 @@ function SeaIndex() {
           </Col>
         ))}
       </Row>
-      <div className="small text-muted mt-2">{note}</div>
         </Card.Body>
       </Card>
     </>
