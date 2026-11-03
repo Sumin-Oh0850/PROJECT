@@ -51,6 +51,37 @@ const nearestSite = (lat, lng) => SITES.map((s) => ({ name: s.name, km: distance
 // 이름 비교용: 공백·괄호 안 글자·기호를 없앤다 (한국관광공사 목록과 같은 곳을 걸러 내기 위해)
 export const normalizeName = (name) => String(name).replace(/\([^)]*\)|\[[^\]]*\]/g, '').replace(/[\s·,.\-_/]/g, '').toLowerCase()
 
+// 이름 바로잡기: 원본의 오타·표기를 고친다. 정확히 짚은 것은 아래 표로, 같은 실수는 규칙으로 함께 고친다.
+//  (표의 키는 normalizeName 결과 — 공백·기호를 뺀 이름)
+const NAME_FIXES = new Map([
+  ['43사건위령비', '4·3사건 위령비'],
+  ['노형수퍼마켙', '노형수퍼마켓'],
+])
+export function fixName(raw) {
+  const name = String(raw).replace(/^[\s"'“”]+|[\s"'“”]+$/g, '') // 앞뒤 공백·탭·따옴표
+  return NAME_FIXES.get(normalizeName(name)) ?? name.replace(/마켙/g, '마켓').replace(/(?<![0-9])43(?=사건|항쟁)/g, '4·3')
+}
+
+// 관광지 탭에 어울리지 않는 업종을 뺀다 (병원·기업·상점·렌터카, 반려동물 미용·호텔·유치원·용품·간식).
+// 반려동물 카페·체험, 학교·유적처럼 관광지일 수 있는 곳은 그대로 둔다.
+const OFF_TOPIC_NAMES = ['카카오본사', '(주)시트러스', '제주고속(주)', '암퀘스트 농업회사법인 주식회사 (제주증류소)'] // 키워드로 걸러지지 않는 곳
+const MEDICAL = /병원|의원|의료|검진|한의원|치과|성형|피부과|약국|클리닉|건강관리|건강증진/
+const COMPANY = /본사|주식회사|\(주\)|㈜/ // (농업회사법인은 식물원 같은 관광지도 있어 이름만으로 거르지 않음)
+const SHOP_CAR = /수퍼마[켓켙]|슈퍼마[켓켙]|마트$|편의점|렌터카|렌트카/
+const PET_SERVICE_CATEGORY = /애견미용|반려견미용|미용서비스|유치원|애견호텔|반려견호텔|용품|수제간식|동물병원/ // 태그(분류) 기준
+const PET_SERVICE_NAME = /그루밍|애견미용|펫스쿨|교육센터|간식/ // 이름 기준 (카페가 들어 있으면 카페라서 제외하지 않음)
+const KEEP_NAMES = ['노형수퍼마켙', '노형수퍼마켓'] // 규칙에 걸려도 관광지로 남길 곳 (원본 표기는 "마켙", 화면에는 fixName 으로 "마켓")
+export function isOffTopic({ title, tag }) {
+  const name = String(title).trim()
+  const category = String(tag ?? '').split(/[,，]/)[0].trim()
+  if (KEEP_NAMES.includes(name)) return false
+  if (OFF_TOPIC_NAMES.includes(name)) return true
+  if (MEDICAL.test(name) || MEDICAL.test(category) || /병원/.test(category)) return true
+  if (COMPANY.test(name) || SHOP_CAR.test(name)) return true
+  if (PET_SERVICE_CATEGORY.test(category)) return true
+  return PET_SERVICE_NAME.test(name) && !/카페/.test(name)
+}
+
 async function loadRows() {
   const rows = []
   for (let page = 1; page <= 20; page++) { // 관광지 1,306곳 → 100곳씩 14쪽
@@ -62,7 +93,9 @@ async function loadRows() {
     rows.push(...json.items)
   }
   // 좌표가 없거나(0,0) 제주 밖이면 지도에 못 찍으므로 제외
-  return rows.filter((r) => r.latitude > 33.0 && r.latitude < 34.1 && r.longitude > 126.0 && r.longitude < 127.2)
+  return rows
+    .filter((r) => r.latitude > 33.0 && r.latitude < 34.1 && r.longitude > 126.0 && r.longitude < 127.2)
+    .filter((r) => !isOffTopic(r)) // 관광지에 어울리지 않는 업종 제외
 }
 const rowsOnce = () => cached('vj-c1-rows', TTL, loadRows, { failTtlMs: 5 * 60_000 })
 
@@ -72,7 +105,7 @@ function toItem(r, group, category) {
   const lng = r.longitude
   return {
     id: `vj-${r.contentsid}`,
-    name: String(r.title).replace(/^[\s"'“”]+|[\s"'“”]+$/g, ''), // 이름 앞뒤의 공백·탭·따옴표 정리
+    name: fixName(r.title), // 앞뒤 공백·따옴표 정리 + 오타 바로잡기
     address: r.roadaddress || r.address || '',
     region: r.region1cd?.label ?? '',
     group,
