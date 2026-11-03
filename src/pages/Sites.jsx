@@ -49,15 +49,6 @@ export default function Sites() {
     <>
       <PageHeader icon="geo-alt" title="서핑" subtitle="지금 바람·돌풍·파도로 서핑 / 윈드서핑 / 패러글라이딩을 해도 되는지 보여 줘요" />
 
-      <ButtonGroup className="mb-3 flex-wrap">
-        {ACTIVITIES.map((a) => (
-          <ToggleButton key={a.value} id={`act-${a.value || 'all'}`} type="radio" variant="outline-primary"
-            name="activity" value={a.value} checked={activity === a.value} onChange={() => setActivity(a.value)}>
-            {a.label}
-          </ToggleButton>
-        ))}
-      </ButtonGroup>
-
       <ErrorAlert error={error} />
       {list.some(isSample) && (
         <Alert variant="warning" className="small">
@@ -67,15 +58,25 @@ export default function Sites() {
 
       {/* 지도: 마커 색 = 판정. 로딩 중에도 먼저 보여 주고, 판정이 도착하면 마커만 채웁니다 */}
       <div ref={mapBox} className="mb-3">
-        <div className="d-flex flex-wrap gap-2 mb-2" aria-label="범례">
-          {['가능', '주의', '위험'].map((s) => (
-            <Badge key={s} bg={STATUS_VARIANT[s]} text={s === '주의' ? 'dark' : undefined} className="fw-normal">
-              {s} {list.filter((j) => j.status === s).length}곳
-            </Badge>
-          ))}
-          <span className="small text-muted align-self-center">마커를 누르면 조건이 나와요</span>
-        </div>
         <SiteMap items={list} onSelect={openDetail} focus={focus} height={380} />
+      </div>
+
+      {/* 종목 탭 + 판정 범례 (지도 아래) */}
+      <ButtonGroup className="mb-3 flex-wrap">
+        {ACTIVITIES.map((a) => (
+          <ToggleButton key={a.value} id={`act-${a.value || 'all'}`} type="radio" variant="outline-primary"
+            name="activity" value={a.value} checked={activity === a.value} onChange={() => setActivity(a.value)}>
+            {a.label}
+          </ToggleButton>
+        ))}
+      </ButtonGroup>
+      <div className="d-flex flex-wrap gap-2 mb-3" aria-label="범례">
+        {['가능', '주의', '위험'].map((s) => (
+          <Badge key={s} bg={STATUS_VARIANT[s]} text={s === '주의' ? 'dark' : undefined} className="fw-normal">
+            {s} {list.filter((j) => j.status === s).length}곳
+          </Badge>
+        ))}
+        <span className="small text-muted align-self-center">마커를 누르면 조건이 나와요</span>
       </div>
 
       {loading ? <Loading text="바람과 파도를 확인하는 중..." /> : list.length === 0 ? <Empty text="장소가 없어요" /> : (
