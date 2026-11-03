@@ -1,90 +1,47 @@
 import { useEffect, useRef, useState } from 'react'
 import { Badge, Button, Card, Col, Row } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
-import { fetchJudgeAll, fetchSeaIndex, ping } from '../api/client'
+import { fetchSeaIndex, ping } from '../api/client'
 import { displayName } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
-import { STATUS_VARIANT, fmt } from '../lib/format'
+import { fmt } from '../lib/format'
 import { useAppStore } from '../store/useAppStore'
 import IntroHero from '../components/IntroHero'
-import StatusBadge from '../components/StatusBadge'
 import WeatherBadge from '../components/WeatherBadge'
 
-// 홈 = 서비스 소개 + 지금 현황 + 내 계정
+// 홈 = 서비스 소개 + 오늘 날씨·바다 지수 + 내 계정 (장소별 지금 현황은 서핑 페이지에 있어요)
 // "동작 체크"(개발자용 점검 카드)는 숨겨 두었고, 주소 뒤에 ?check 를 붙이면(예: /?check) 나타납니다.
 export default function Home() {
   const user = useAppStore((s) => s.user)
   const authReady = useAppStore((s) => s.authReady)
   const [params] = useSearchParams()
   const contentRef = useRef(null)
-  const [overview, setOverview] = useState({ state: 'wait', list: [] })
-
-  useEffect(() => {
-    // 지금 현황: 모든 장소의 가능/주의/위험
-    fetchJudgeAll()
-      .then((list) => setOverview({ state: 'ok', list }))
-      .catch((e) => setOverview({ state: 'fail', list: [], msg: e.message }))
-  }, [])
-
-  const count = (status) => overview.list.filter((j) => j.status === status).length
 
   return (
     <>
       <IntroHero targetRef={contentRef} />
 
-      {/* 소개 문구: 큰 영어 제목 + 설명 (스크롤로 내려오면 가장 먼저 보이는 곳) */}
-      <section ref={contentRef} className="home-message" aria-label="소개">
-        <h2 className="home-message-title">GO WITH THE WIND, STAY SAFE</h2>
-        <p className="home-message-text">좋은 파도보다 먼저 필요한 것은 안전한 하루입니다.<br />바당타기가 제주의 바람과 파도를 읽어 드릴게요.</p>
-      </section>
+      {/* 홈은 세 구역: ① 이미지(위의 IntroHero) ② 안내 문구·오늘 날씨·바다 지수 ③ 그 외(지금 현황·내 계정) */}
 
-      {/* 제목은 위, 날씨 데이터는 그 아래 줄 */}
-      <div className="mb-4">
-        <h5 className="fw-bold mb-3"><i className="bi bi-cloud-sun me-2" />오늘 날씨</h5>
-        <div className="d-flex flex-wrap gap-2 align-items-center">
-          <WeatherBadge place="제주시" />
-          <WeatherBadge place="서귀포시" />
+      {/* ② 안내 문구: 큰 영어 제목 + 설명 (스크롤로 내려오면 가장 먼저 보이는 곳) */}
+      <section ref={contentRef} className="home-section" aria-label="안내·오늘 날씨·바다 지수">
+        <div className="home-message">
+          <h2 className="home-message-title">GO WITH THE WIND, STAY SAFE</h2>
+          <p className="home-message-text">좋은 파도보다 먼저 필요한 것은 안전한 하루입니다.<br />바당타기가 제주의 바람과 파도를 읽어 드릴게요.</p>
+          <Link to="/sites" className="btn btn-primary home-cta mt-4"><i className="bi bi-geo-alt me-1" />장소 보기</Link>
         </div>
-      </div>
 
-      {/* 바다 지수: "오늘 날씨" 바로 아래 */}
-      <div className="mb-4"><SeaIndex /></div>
+        {/* 제목은 위, 날씨 데이터는 그 아래 줄 */}
+        <div className="mb-4">
+          <h5 className="fw-bold mb-3"><i className="bi bi-cloud-sun me-2" />오늘 날씨</h5>
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <WeatherBadge place="제주시" />
+            <WeatherBadge place="서귀포시" />
+          </div>
+        </div>
 
-      <h5 className="fw-bold mb-3"><i className="bi bi-traffic-light me-2" />지금 현황</h5>
-      <Card className="mb-4">
-        <Card.Body>
-          {overview.state === 'wait' && <div className="text-muted small">바람과 파도를 확인하는 중...</div>}
-          {overview.state === 'fail' && <div className="text-danger small">현황을 불러오지 못했어요: {overview.msg}</div>}
-          {overview.state === 'ok' && (
-            <>
-              <div className="d-flex flex-wrap gap-3 mb-3">
-                {['가능', '주의', '위험'].map((s) => (
-                  <Badge key={s} bg={STATUS_VARIANT[s]} text={s === '주의' ? 'dark' : undefined} className="fs-6 fw-normal">
-                    {s} {count(s)}곳
-                  </Badge>
-                ))}
-              </div>
-              <Row xs={1} md={2} className="g-2">
-                {overview.list.map((j) => (
-                  <Col key={j.id}>
-                    {/* 항목 전체를 누르던 방식 → 항목 아래쪽의 긴 "상세" 버튼으로만 이동 */}
-                    <div className="border rounded px-3 py-2 h-100 d-flex flex-column gap-2">
-                      <div className="d-flex justify-content-between align-items-start gap-2">
-                        <span>
-                          <b>{j.site}</b> <small className="text-muted">{j.activity}</small>
-                          <div className="small text-muted">풍속 {fmt(j.conditions.wind_ms, 'm/s')} · 돌풍 {fmt(j.conditions.gust_ms, 'm/s')}{j.conditions.wave_m != null && ` · 파도 ${fmt(j.conditions.wave_m, 'm')}`}</div>
-                        </span>
-                        <span className="flex-shrink-0"><StatusBadge status={j.status} /></span>
-                      </div>
-                      <Button as={Link} to={`/sites/${j.id}`} size="sm" variant="primary" className="w-100 mt-auto" aria-label={`${j.site} 상세 보기`}>상세</Button>
-                    </div>
-                  </Col>
-                ))}
-              </Row>
-            </>
-          )}
-        </Card.Body>
-      </Card>
+        {/* 바다 지수: "오늘 날씨" 바로 아래 */}
+        <div className="mb-4"><SeaIndex /></div>
 
       {/* 개발자용 점검 카드: /?check 일 때만 보임 (이때만 점검 요청도 보냄) */}
       {params.has('check') && <SystemCheck />}
@@ -107,6 +64,7 @@ export default function Home() {
           ))}
         </Card.Body>
       </Card>
+      </section>
     </>
   )
 }

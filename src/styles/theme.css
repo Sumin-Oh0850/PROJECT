@@ -119,8 +119,14 @@ main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 
   .chat-fab.open { display: none; } /* 전체 화면 창에는 머리의 닫기 버튼이 있으므로 동그란 버튼은 숨김 */
 }
 
-/* 홈 소개 문구: 어두운 바탕에 큰 영어 제목 + 설명 (Freesentation) */
-.home-message { font-family: 'Freesentation', 'NanumSquare', system-ui, sans-serif; background: transparent; color: #0b2f4a; border-radius: 1rem; padding: 3.125rem 2rem 6.25rem; margin-bottom: 1.5rem; } /* 아래 여백 2.5배(6.25rem), 위 여백은 그 절반(3.125rem) */
+/* 홈 구역: ② 안내·날씨·바다 지수·내 계정 (이미지 구역은 위의 intro-hero). 흰 배경 없이 페이지 배경 그대로 */
+.home-section { margin-bottom: 1.5rem; }
+
+/* 안내 문구 아래 "장소 보기" 버튼: 기본 버튼(글자 1rem · 안쪽 여백 .375rem .75rem)의 2배, 굵게 */
+.home-cta { --bs-btn-font-size: 2rem; --bs-btn-padding-x: 1.5rem; --bs-btn-padding-y: .75rem; --bs-btn-font-weight: 700; --bs-btn-border-radius: .6rem; font-weight: 700; white-space: nowrap; }
+
+/* 홈 소개 문구:어두운 바탕에 큰 영어 제목 + 설명 (Freesentation) */
+.home-message { font-family: 'Freesentation', 'NanumSquare', system-ui, sans-serif; background: transparent; color: #0b2f4a; border-radius: 1rem; padding: 3.125rem 2rem 3.125rem; margin-bottom: .75rem; } /* 아래 공백(날씨와의 간격)은 이전의 0.5배: 3.125rem + .75rem */
 .home-message-title { font-family: inherit; font-weight: 700; font-size: clamp(1.7rem, 4.5vw, 2.6rem); letter-spacing: .01em; line-height: 1.15; color: #0b2f4a; margin: 0 0 1.5rem; }
 .home-message-text { font-size: clamp(1rem, 2.2vw, 1.15rem); line-height: 1.9; color: #0b2f4a; margin: 0; }
-@media (min-width: 768px) { .home-message { padding: 3.75rem 4rem 7.5rem; } } /* 아래 여백 2.5배(7.5rem), 위 여백은 그 절반(3.75rem) */
+@media (min-width: 768px) { .home-message { padding: 3.75rem 4rem 3.75rem; } } /* 아래 공백은 이전의 0.5배: 3.75rem + .75rem */
