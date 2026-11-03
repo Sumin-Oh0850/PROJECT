@@ -1,23 +1,23 @@
 /* 테마 위에 덧입히는 우리 앱 스타일 — 색은 Bootstrap 변수(--bs-*)를 써서 테마를 바꿔도 어울리게 */
 /* 인트로 사진(김녕 바다)의 색에서 뽑은 기본색: 깊은 바다 #4c81aa · 바다 #598fbc · 하늘 #6da7e6 · 연한 하늘 #9ec2e7 · 숲 #445128 */
 :root {
-  --sea-deep: #3a6c94; --sea: #598fbc; --sky: #6da7e6; --sky-soft: #e8f1fb;
-  --bs-primary: var(--sea-deep); --bs-primary-rgb: 58, 108, 148;
-  --bs-info: var(--sky); --bs-info-rgb: 109, 167, 230;
-  --bs-link-color: var(--sea-deep); --bs-link-color-rgb: 58, 108, 148;
-  --bs-link-hover-color: #2d5675; --bs-link-hover-color-rgb: 45, 86, 117;
+  --sea-deep: #0077cc; --sea: #38bdf8; --sky: #38bdf8; --sky-soft: #eaf6ff; --sea-green: #00b8b0; --sun: #ffc43d;
+  --bs-primary: var(--sea-deep); --bs-primary-rgb: 0, 119, 204;
+  --bs-info: var(--sky); --bs-info-rgb: 56, 189, 248;
+  --bs-link-color: var(--sea-deep); --bs-link-color-rgb: 0, 119, 204;
+  --bs-link-hover-color: #005fa3; --bs-link-hover-color-rgb: 0, 95, 163;
   --bs-tertiary-bg: var(--sky-soft);
-  --bs-success: #4f7a3a; --bs-success-rgb: 79, 122, 58; /* 숲 초록 */
+  --bs-success: #22a05a; --bs-success-rgb: 34, 160, 90; /* 싱그러운 초록 */
 }
-.btn-primary { --bs-btn-bg: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: #2d5675; --bs-btn-hover-border-color: #2d5675; --bs-btn-active-bg: #264a65; --bs-btn-active-border-color: #264a65; --bs-btn-disabled-bg: var(--sea); --bs-btn-disabled-border-color: var(--sea); }
+.btn-primary { --bs-btn-bg: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: #005fa3; --bs-btn-hover-border-color: #005fa3; --bs-btn-active-bg: #004f89; --bs-btn-active-border-color: #004f89; --bs-btn-disabled-bg: var(--sea); --bs-btn-disabled-border-color: var(--sea); }
 .btn-outline-primary { --bs-btn-color: var(--sea-deep); --bs-btn-border-color: var(--sea-deep); --bs-btn-hover-bg: var(--sea-deep); --bs-btn-hover-border-color: var(--sea-deep); --bs-btn-active-bg: var(--sea-deep); --bs-btn-active-border-color: var(--sea-deep); }
-.btn-success { --bs-btn-bg: #4f7a3a; --bs-btn-border-color: #4f7a3a; }
+.btn-success { --bs-btn-bg: #22a05a; --bs-btn-border-color: #22a05a; }
 .navbar .navbar-brand, .navbar .nav-link, .navbar .btn { font-weight: 700; } /* 상단 배너 글자 전체 굵게 */
-.navbar.bg-primary { background-color: var(--sea-deep) !important; }
-.bg-success { background-color: #4f7a3a !important; }
+.navbar.bg-primary { background-color: var(--sea-deep) !important; --bs-navbar-color: rgba(255,255,255,.92); --bs-navbar-hover-color: #fff; --bs-navbar-active-color: #fff; } /* 비활성 메뉴도 밝은 흰색 */
+.bg-success { background-color: #22a05a !important; }
 .text-primary { color: var(--sea-deep) !important; }
 .border-primary { border-color: var(--sea-deep) !important; }
-.form-control:focus, .form-select:focus { border-color: var(--sky); box-shadow: 0 0 0 .25rem rgba(109,167,230,.25); }
+.form-control:focus, .form-select:focus { border-color: var(--sky); box-shadow: 0 0 0 .25rem rgba(56,189,248,.25); }
 /* '웻'(U+C6FB) 은 나눔스퀘어에 없어서 unicode-range 로 빼고 시스템 글꼴로 보이게 함 */
 @font-face { font-family: 'NanumSquare'; font-weight: 400; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareR.otf') format('opentype'); unicode-range: U+0000-C6FA, U+C6FC-10FFFF; }
 @font-face { font-family: 'NanumSquare'; font-weight: 700; font-style: normal; font-display: swap; src: url('../assets/fonts/NanumSquareB.otf') format('opentype'); unicode-range: U+0000-C6FA, U+C6FC-10FFFF; }
@@ -29,7 +29,7 @@ input[type="password"] { font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
 body { font-family: var(--bs-body-font-family); background: var(--bs-tertiary-bg); }
 
 .hero {
-  background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+  background: linear-gradient(135deg, var(--bs-primary), var(--sea-green));
   color: #fff;
 }
 .hero h1, .hero .lead { color: #fff; }
@@ -96,7 +96,7 @@ main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 
   color: #fff; background: var(--sea-deep); box-shadow: 0 .4rem 1rem rgba(0,0,0,.25);
   display: flex; align-items: center; justify-content: center; transition: transform .15s, background .15s;
 }
-.chat-fab:hover { transform: scale(1.06); background: #2d5675; }
+.chat-fab:hover { transform: scale(1.06); background: #005fa3; }
 .chat-window {
   position: fixed; left: 1.25rem; bottom: 5.5rem; z-index: 1050;
   width: min(380px, calc(100vw - 2.5rem)); height: min(560px, calc(100vh - 8rem)); height: min(560px, calc(100svh - 8rem));
