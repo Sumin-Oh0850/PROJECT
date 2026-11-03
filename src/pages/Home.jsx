@@ -40,12 +40,15 @@ export default function Home() {
 
       {/* 제목은 위, 날씨 데이터는 그 아래 줄 */}
       <div className="mb-4">
-        <div className="fw-bold mb-2"><i className="bi bi-cloud-sun me-1" />오늘 날씨</div>
+        <h5 className="fw-bold mb-3"><i className="bi bi-cloud-sun me-2" />오늘 날씨</h5>
         <div className="d-flex flex-wrap gap-2 align-items-center">
           <WeatherBadge place="제주시" />
           <WeatherBadge place="서귀포시" />
         </div>
       </div>
+
+      {/* 바다 지수: "오늘 날씨" 바로 아래 */}
+      <div className="mb-4"><SeaIndex /></div>
 
       <h5 className="fw-bold mb-3"><i className="bi bi-traffic-light me-2" />지금 현황</h5>
       <Card className="mb-4">
@@ -61,7 +64,6 @@ export default function Home() {
                   </Badge>
                 ))}
               </div>
-              <SeaIndex />
               <Row xs={1} md={2} className="g-2">
                 {overview.list.map((j) => (
                   <Col key={j.id}>
@@ -123,14 +125,19 @@ function SeaIndex() {
     return () => { alive = false }
   }, [])
 
-  if (sea.state === 'wait') return <div className="text-muted small mb-3">바다 지수를 확인하는 중...</div>
+  // "지금 현황"과 같은 모양: 제목은 위, 내용은 흰색 카드 안
+  const title = <h5 className="fw-bold mb-3"><i className="bi bi-water me-2" />바다 지수</h5>
+  if (sea.state === 'wait') return <>{title}<Card><Card.Body><div className="text-muted small">바다 지수를 확인하는 중...</div></Card.Body></Card></>
   if (sea.state === 'fail' || !sea.data.items?.length) {
-    return <div className="text-muted small mb-3"><i className="bi bi-info-circle me-1" />{sea.data?.note ?? '바다 지수를 불러오지 못했어요.'}</div>
+    return <>{title}<Card><Card.Body><div className="text-muted small"><i className="bi bi-info-circle me-1" />{sea.data?.note ?? '바다 지수를 불러오지 못했어요.'}</div></Card.Body></Card></>
   }
   const { items, note, date, period } = sea.data
   return (
-    <div className="mb-3">
-      <div className="fw-bold mb-2"><i className="bi bi-water me-1" />바다 지수 <small className="text-muted fw-normal">제주 4개 해역 · {String(date).slice(5).replace('-', '/')} {period}</small></div>
+    <>
+      {title}
+      <Card>
+        <Card.Body>
+      <div className="small text-muted mb-3">제주 4개 해역 · {String(date).slice(5).replace('-', '/')} {period}</div>
       <Row xs={2} md={4} className="g-2">
         {items.map((s) => (
           <Col key={s.area}>
@@ -150,8 +157,10 @@ function SeaIndex() {
           </Col>
         ))}
       </Row>
-      <div className="small text-muted mt-1">{note}</div>
-    </div>
+      <div className="small text-muted mt-2">{note}</div>
+        </Card.Body>
+      </Card>
+    </>
   )
 }
 
