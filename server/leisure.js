@@ -31,22 +31,62 @@ export function listSites({ activity } = {}) {
 // =================================================================
 // 핵심 도구 2. get_wind_gusts  (Open-Meteo 날씨 + 해양, 키 불필요)
 // =================================================================
-async function getJson(url) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+// 외부 날씨 서버가 잠깐 거절하거나 느릴 때를 대비해 실패하면 한 번 더 시도한다 (총 2번).
+export async function getJson(url, { retries = 1, waitMs = 700 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return await res.json()
+    } catch (e) {
+      if (attempt >= retries) throw e
+      await new Promise((r) => setTimeout(r, waitMs))
+    }
+  }
 }
 
-async function fetchWind(lat, lng) {
+// 같은 순간에 들어온 요청을 모아 한 번에 보낸다. 장소 14곳 × (바람·파도) = 28번 → 2번.
+// (Open-Meteo 는 좌표를 쉼표로 여러 개 받고, 좌표가 여러 개면 결과를 배열로 돌려준다. 몰려서 거절당하는 것을 줄이는 방법)
+const MAX_PER_REQUEST = 50
+export function microBatch(fetchMany) {
+  let queue = null
+  return (item) => new Promise((resolve, reject) => {
+    if (!queue) {
+      queue = []
+      setTimeout(async () => {
+        const batch = queue
+        queue = null
+        try {
+          const results = []
+          for (let i = 0; i < batch.length; i += MAX_PER_REQUEST) {
+            results.push(...await fetchMany(batch.slice(i, i + MAX_PER_REQUEST).map((b) => b.item)))
+          }
+          batch.forEach((b, i) => b.resolve(results[i]))
+        } catch (e) {
+          batch.forEach((b) => b.reject(e))
+        }
+      }, 0)
+    }
+    queue.push({ item, resolve, reject })
+  })
+}
+
+const coordParams = (sites) => ({ latitude: sites.map((s) => s.lat).join(','), longitude: sites.map((s) => s.lng).join(',') })
+const asList = (data, n) => {
+  const list = Array.isArray(data) ? data : [data]
+  if (list.length !== n) throw new Error('날씨 서버 응답 개수가 달라요')
+  return list
+}
+
+const fetchWind = microBatch(async (sites) => {
   const params = new URLSearchParams({
-    latitude: lat,
-    longitude: lng,
+    ...coordParams(sites),
     current: 'temperature_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',
     wind_speed_unit: 'ms', // 풍속 단위: m/s
     timezone: 'Asia/Seoul',
   })
-  const { current: c } = await getJson(`https://api.open-meteo.com/v1/forecast?${params}`)
-  return {
+  const list = asList(await getJson(`https://api.open-meteo.com/v1/forecast?${params}`), sites.length)
+  return list.map(({ current: c }) => ({
     time: c.time,
     temp_c: c.temperature_2m,
     precip_mm: c.precipitation,
@@ -54,19 +94,22 @@ async function fetchWind(lat, lng) {
     wind_ms: c.wind_speed_10m,
     gust_ms: c.wind_gusts_10m,
     wind_dir_deg: c.wind_direction_10m,
-  }
-}
+  }))
+})
 
-async function fetchMarine(lat, lng) {
+const fetchMarine = microBatch(async (sites) => {
   const params = new URLSearchParams({
-    latitude: lat,
-    longitude: lng,
+    ...coordParams(sites),
     current: 'wave_height,wave_period,wave_direction,sea_surface_temperature',
     timezone: 'Asia/Seoul',
   })
-  const { current: c } = await getJson(`https://marine-api.open-meteo.com/v1/marine?${params}`)
-  return { wave_m: c.wave_height, wave_period_s: c.wave_period, sea_temp_c: c.sea_surface_temperature }
-}
+  const list = asList(await getJson(`https://marine-api.open-meteo.com/v1/marine?${params}`), sites.length)
+  return list.map(({ current: c }) => ({ wave_m: c.wave_height, wave_period_s: c.wave_period, sea_temp_c: c.sea_surface_temperature }))
+})
+
+// 샘플 값으로 대신한 결과는 오래 저장하지 않고(30초) 곧바로 다시 시도한다. 성공한 값은 10분.
+const SAMPLE_TTL = 30_000
+const ttlForSource = (value) => (value?.source === 'sample' ? SAMPLE_TTL : undefined)
 
 // 인터넷이 끊기거나 외부 API 가 실패해도 화면이 멈추지 않도록 쓰는 샘플 값 (source: 'sample')
 // 판정 결과가 골고루 나오도록 일부러 다르게 설정했습니다.
@@ -104,7 +147,7 @@ export async function getWindGusts({ site: siteId } = {}) {
 
     let wind
     try {
-      wind = await fetchWind(site.lat, site.lng)
+      wind = await fetchWind(site)
     } catch {
       wind = sampleWind(site)
       sources.wind = 'sample'
@@ -115,7 +158,7 @@ export async function getWindGusts({ site: siteId } = {}) {
       // 바다 활동이면 파도 정보도 함께
       sources.marine = 'open-meteo'
       try {
-        marine = await fetchMarine(site.lat, site.lng)
+        marine = await fetchMarine(site)
       } catch {
         marine = sampleMarine(site)
         sources.marine = 'sample'
@@ -133,7 +176,7 @@ export async function getWindGusts({ site: siteId } = {}) {
       gust_spread_ms: gustSpread(wind.gust_ms, wind.wind_ms), // 돌풍 편차: 클수록 바람이 들쭉날쭉
       offshore: isOffshore(site.facing_deg, wind.wind_dir_deg),
     }
-  }, { failTtlMs: 30_000 })
+  }, { failTtlMs: 30_000, ttlFor: ttlForSource })
 }
 
 // =================================================================
@@ -369,5 +412,5 @@ export async function getForecast({ site: siteId } = {}) {
         return { ...hr, gust_spread_ms: spread, offshore, status: j.status, reasons: j.reasons }
       }),
     }
-  }, { failTtlMs: 30_000 })
+  }, { failTtlMs: 30_000, ttlFor: ttlForSource })
 }

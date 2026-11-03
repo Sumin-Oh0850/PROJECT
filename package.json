@@ -13,6 +13,7 @@
     "test:tools": "node scripts/test-tools.mjs",
     "test:spots": "node scripts/test-spots.mjs",
     "test:sea": "node scripts/test-seaindex.mjs",
+    "test:weather": "node scripts/test-weather.mjs",
     "test:agent": "node scripts/test-agent.mjs",
     "test:favorites": "node scripts/test-favorites.mjs"
   },

@@ -106,6 +106,18 @@ main { overflow-x: clip; } /* 100vw 가 세로 스크롤바 폭만큼 넘치는 
 .chat-window-body { flex: 1; overflow-y: auto; padding: 1rem; background: var(--sky-soft); }
 .chat-window-body .msg { max-width: 90%; white-space: pre-wrap; }
 .chat-window-foot { padding: .75rem; border-top: 1px solid rgba(0,0,0,.08); background: #fff; }
+.chat-window-foot input { font-size: 16px; } /* 16px 보다 작으면 iPhone 이 입력칸을 누를 때 화면을 확대함 */
+
+/* 모바일: 화면 전체 창. 높이·위치는 키보드에 맞춰 ChatWidget 이 visualViewport 로 바꿈 (그 전에는 100dvh) */
+@media (max-width: 575.98px) {
+  .chat-window {
+    left: 0; right: 0; top: 0; bottom: auto; width: 100%; border: 0; border-radius: 0;
+    height: 100vh; height: 100dvh;
+  }
+  .chat-window-head { padding-top: calc(.75rem + env(safe-area-inset-top, 0px)); }
+  .chat-window-foot { padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px)); } /* 홈 바가 있는 iPhone 에서 입력칸이 가려지지 않게 */
+  .chat-fab.open { display: none; } /* 전체 화면 창에는 머리의 닫기 버튼이 있으므로 동그란 버튼은 숨김 */
+}
 
 /* 홈 소개 문구: 어두운 바탕에 큰 영어 제목 + 설명 (Freesentation) */
 .home-message { font-family: 'Freesentation', 'NanumSquare', system-ui, sans-serif; background: transparent; color: #0b2f4a; border-radius: 1rem; padding: 3.125rem 2rem 6.25rem; margin-bottom: 1.5rem; } /* 아래 여백 2.5배(6.25rem), 위 여백은 그 절반(3.125rem) */
