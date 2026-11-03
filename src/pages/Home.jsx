@@ -142,7 +142,7 @@ function SeaIndex() {
                 </Badge>
               </div>
               <div className="small text-muted">
-                수온 {fmt(s.sea_temp_c, '℃')} · 파고 {fmt(s.wave_m, 'm')}<br />
+                수온 {fmt(s.sea_temp_c, '℃')} · 파도 {fmt(s.wave_m, 'm')}<br />
                 풍속 {fmt(s.wind_ms, 'm/s')} · {s.tide || '조석 정보 없음'}<br />
                 {s.weather}
               </div>
