@@ -6,5 +6,6 @@ export default function handler(req, res) {
     time: new Date().toISOString(),
     hasDataKey: Boolean(process.env.DATA_GO_KR_KEY),
     hasClaudeKey: Boolean(process.env.ANTHROPIC_API_KEY),
+    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
   });
 }

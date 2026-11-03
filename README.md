@@ -21,7 +21,8 @@ npm run dev                    # 화면 + /api 서버 함수 (http://localhost:5
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | 회원·즐겨찾기 (브라우저용, 공개돼도 되는 값) | 로그인·즐겨찾기가 안 됨 |
 | `DATA_GO_KR_KEY` (또는 `TOUR_API_KEY`) | 한국관광공사·기상청 (공공데이터포털 Decoding 키, 서버 전용) | 관광지·주변 정보·예보가 "정보 없음" |
 | `VISITJEJU_API_KEY` | 비짓제주 관광정보 (제주관광공사, 서버 전용). 사진이 없는 해변의 대표 사진을 채움 | 사진 없는 해변이 빈 이미지로 보임 |
-| `ANTHROPIC_API_KEY` | AI 가이드 (서버 전용) | AI 가이드에 안내 문구 표시 |
+| `GEMINI_API_KEY` | AI 가이드 — Google Gemini (서버 전용, [AI Studio](https://aistudio.google.com/apikey) 에서 무료 발급) | AI 가이드에 키 안내 문구 표시 |
+| `ANTHROPIC_API_KEY` | AI 가이드 — Claude (서버 전용). 둘 다 있으면 `AI_PROVIDER`(gemini·anthropic·auto) 로 고르고, 실패하면 다른 쪽으로 대신함 | 위와 같음 |
 
 `VITE_` 가 붙은 값만 브라우저에 들어갑니다. **서버 키에는 절대 `VITE_` 를 붙이지 마세요.** 바람·파도(Open-Meteo)는 키가 필요 없습니다.
 
@@ -164,6 +165,6 @@ legacy/      스타터 적용 전의 이전 작업(Python 도구 등)을 그대�
 |---|---|---|
 | 0~1 | React · 라우터 · Bootstrap · Zustand · 서버 함수 `/api` | ✅ |
 | 2~4 | 관광(TourAPI) · 날씨(기상청) | ✅ |
-| A~E | 바람·판정·장소·주변 정보·AI 도구 | ✅ (AI 실제 대화는 `ANTHROPIC_API_KEY` 필요) |
+| A~E | 바람·판정·장소·주변 정보·AI 도구 | ✅ (AI 실제 대화는 `GEMINI_API_KEY` 또는 `ANTHROPIC_API_KEY` 필요) |
 | F | **장소 지도**, **관광지·해변 지도 + 고루 분포 100곳**, 기존 지도 탭 삭제 | ✅ |
 | G | 회원가입·로그인·비밀번호 변경·회원 탈퇴 + 사용자별 즐겨찾기 | ✅ 화면·입력 검증·로그아웃 동작 / ⏳ 실제 가입·탈퇴는 SQL 실행 후 확인 |
