@@ -13,8 +13,8 @@ const status = async (site, conditions) => (await judgeActivity({ site, conditio
 const reasons = async (site, conditions) => (await judgeActivity({ site, conditions })).reasons
 
 console.log('── list_sites ──')
-expect('전체 8곳', listSites().length, 8)
-expect('서핑 5곳', listSites({ activity: 'surfing' }).length, 5)
+expect('전체 14곳', listSites().length, 14)
+expect('서핑 11곳', listSites({ activity: 'surfing' }).length, 11)
 expect('윈드서핑 2곳', listSites({ activity: 'windsurfing' }).length, 2)
 expect('패러글라이딩 1곳', listSites({ activity: 'paragliding' }).map((s) => s.id), ['geumoreum'])
 try {

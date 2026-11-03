@@ -47,13 +47,30 @@ ok(cleanCoord(37.5, 127.0) === null, '제주 밖(서울)은 제외')
 ok(cleanCoord(36.0, 12.5) === null, '경도를 보정해도 위도가 제주 밖이면 제외')
 
 console.log('── ② 실제 TourAPI 결과 ──')
+const all = await listSpots() // n 없이 = 한국관광공사 목록 전체
 const r = await listSpots({ n: 100 })
+if (all.source === 'tourapi') {
+  const allBase = all.items.filter((i) => !i.extra && !i.facility && !i.visit)
+  ok(allBase.length === all.candidates, `한국관광공사 목록 전체 ${all.candidates}곳을 모두 포함 (실제 ${allBase.length}곳)`)
+  ok(new Set(allBase.map((i) => i.id)).size === allBase.length, '전체 선정에도 중복 없음')
+}
 if (r.source !== 'tourapi') {
   console.log(`⚠️ TourAPI 를 쓸 수 없어 건너뜀 (${r.source}: ${r.note})`)
 } else {
   console.log(`   후보 ${r.candidates}곳 → 선정 ${r.count}곳`)
-  const base = r.items.filter((i) => !i.extra)
+  const base = r.items.filter((i) => !i.extra && !i.facility && !i.visit)
   const extra = r.items.filter((i) => i.extra)
+  const facilities = r.items.filter((i) => i.facility)
+  const visit = r.items.filter((i) => i.visit && !i.facility)
+  if (process.env.VISITJEJU_API_KEY) {
+    ok(facilities.length >= 80, `레저 업체·시설 ${facilities.length}곳 (비짓제주)`)
+    ok(facilities.every((i) => i.group === 'leisure' && i.near && !/(해수욕장|해변)$/.test(i.name)), '레저 시설: 그룹·가까운 장소·해변 제외')
+    const imgOf = (list) => list.filter((i) => i.image).length
+    ok(imgOf(facilities) >= facilities.length * 0.9, `레저 시설 사진 ${imgOf(facilities)}/${facilities.length}곳`)
+    ok(visit.length >= 500, `비짓제주 관광지 ${visit.length}곳 추가`)
+    ok(imgOf(visit) >= visit.length * 0.9 && visit.every((i) => !i.image || i.image.startsWith('https://')), `추가 관광지 사진 ${imgOf(visit)}/${visit.length}곳 (https)`)
+    ok(new Set(facilities.map((i) => i.id)).size === facilities.length, '레저 시설 중복 없음')
+  }
   ok(base.length === 100, `TourAPI 선정 정확히 100곳 (실제 ${base.length})`)
   ok(extra.length > 0 && extra.every((i) => i.is_beach), `직접 더한 해수욕장·해변 ${extra.length}곳`)
   if (process.env.VISITJEJU_API_KEY) {
@@ -67,11 +84,11 @@ if (r.source !== 'tourapi') {
 
   console.log('   묶음별 (선정/후보):', r.groups.map((g) => `${g.label} ${g.count}/${g.total}`).join(' · '))
   const gc = (k) => base.filter((i) => i.group === k).length
-  const counts = r.groups.map((g) => gc(g.key))
+  const counts = r.groups.filter((g) => g.key !== 'leisure').map((g) => gc(g.key))
   ok(Math.max(...counts) - Math.min(...counts) <= 3, `묶음 크기 차이 ${Math.max(...counts) - Math.min(...counts)} (3 이하) — 오름이 37→${gc("oreum")}로 줄어 쏠림 해소`)
   console.log('   시군구:', r.regions.map((g) => `${g.key} ${g.count}`).join(' · '))
   const beachAll = base.filter((i) => i.cat3 === 'A01011200').length
-  ok(beachAll === 5, `해수욕장 5곳 모두 포함 (실제 ${beachAll})`)
+  ok(beachAll >= 4 && base.filter((i) => i.cat3 === 'A01011200').length === r.items.filter((i) => !i.extra && i.cat3 === 'A01011200').length, `한국관광공사 해수욕장은 모두 포함 (실제 ${beachAll}곳 — 공공데이터가 바뀌면 수가 달라질 수 있어요)`)
 
   // 위치 분포: 0.1°(약 10km) 격자 중 몇 칸에 곳이 있는지, 한 칸에 몇 곳까지 몰렸는지
   const cells = (items) => new Set(items.map((i) => `${Math.floor(i.lat * 10)}:${Math.floor(i.lng * 10)}`)).size

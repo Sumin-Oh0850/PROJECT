@@ -1,4 +1,4 @@
-// 제주 관광지 약 100곳 (한국관광공사 TourAPI 관광지 132건 중 "고루 분포"하도록 선정)
+// 제주 관광지 (한국관광공사 TourAPI 관광지 전체. n 을 주면 그 수만큼 "고루 분포"하도록 선정)
 //
 // 왜 선정이 필요한가: 한국관광공사에 등록된 제주 관광지는 132건인데 오름(산)이 37건으로 몰려 있어,
 // 앞에서부터 100개를 자르면 분류도 위치도 한쪽으로 치우칩니다.
@@ -9,6 +9,7 @@
 //      → 가까이 몰린 곳은 빠지고, 섬 전체에 퍼진다. 결과는 항상 같다(무작위 없음).
 import { cached } from './cache.js'
 import { findPhoto } from './visitjeju.js'
+import { listFacilities, listVisitSpots } from './facilities.js'
 
 const BASE = 'https://apis.data.go.kr/B551011/KorService2'
 const TIMEOUT = 15_000
@@ -21,6 +22,7 @@ export const GROUPS = {
   coast: { label: '해변·해안·포구', color: '#1e88e5' },
   history: { label: '역사·문화', color: '#8e24aa' },
   play: { label: '체험·휴양', color: '#ef6c00' },
+  leisure: { label: '레저 시설', color: '#7b5ea7' }, // 비짓제주의 레저 업체·시설 (아래 listSpots 에서 더함)
 }
 
 // TourAPI 세부분류(cat3) → [이름, 묶음]  (categoryCode2 로 확인한 값)
@@ -155,7 +157,7 @@ async function fetchCandidates() {
 
 // 한국관광공사 "관광지"에는 해수욕장이 5곳뿐이라, 널리 알려진 제주 해수욕장·해변을 직접 더했습니다.
 // 좌표는 OpenStreetMap 에서 확인한 값입니다. 사진·분류 정보는 없어서 이미지 칸은 비어 있습니다.
-// (이미 있는 곳과 겹치지 않도록 TourAPI 의 삼양·함덕·하도·하모·논짓물은 넣지 않았습니다.)
+// (이미 있는 곳과 겹치지 않도록 TourAPI 의 삼양·함덕·하모·논짓물은 넣지 않았습니다. 같은 이름이 TourAPI 에 있으면 자동으로 빠집니다.)
 export const EXTRA_BEACHES = [
   ['협재해수욕장', '제주시', '제주특별자치도 제주시 한림읍 협재리', 33.3940, 126.2400],
   ['금능해수욕장', '제주시', '제주특별자치도 제주시 한림읍 금능리', 33.3895, 126.2356],
@@ -169,6 +171,7 @@ export const EXTRA_BEACHES = [
   ['표선해수욕장', '서귀포시', '제주특별자치도 서귀포시 표선면 표선리', 33.3280, 126.8370],
   ['소금막해변', '서귀포시', '제주특별자치도 서귀포시 표선면', 33.3312, 126.8425],
   ['광치기해변', '서귀포시', '제주특별자치도 서귀포시 성산읍 고성리', 33.4538, 126.9255],
+  ['하도해변', '제주시', '제주특별자치도 제주시 구좌읍 하도리', 33.5135, 126.8988], // 한국관광공사 목록에서 빠져서 직접 더함 (이미 목록에 있으면 자동으로 건너뜀)
 ].map(([name, region, address, lat, lng]) => ({
   id: `extra-${name}`,
   name,
@@ -186,7 +189,8 @@ export const EXTRA_BEACHES = [
 }))
 
 export async function listSpots({ n } = {}) {
-  const count = Math.min(Math.max(Number(n) || 100, 10), 132)
+  // n 을 주지 않으면 한국관광공사 목록 전체를 쓴다 (n 을 주면 그 수만큼 분류·위치가 고르게 추려 냄)
+  const count = Number(n) > 0 ? Math.max(Number(n), 10) : Infinity
   if (!tourKey()) {
     return { source: 'unavailable', count: 0, items: [], note: '한국관광공사 키(TOUR_API_KEY 또는 DATA_GO_KR_KEY)가 없어요. .env.local 을 확인하세요.' }
   }
@@ -197,9 +201,13 @@ export async function listSpots({ n } = {}) {
       const merged = [...selectSpread(candidates, count), ...EXTRA_BEACHES.filter((b) => !known.has(b.name))]
         .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
       // 사진이 없는 곳은 비짓제주에서 찾아 채운다 (키가 없거나 못 찾으면 그대로 빈 이미지)
-      const items = await Promise.all(merged.map(async (i) => (i.image ? i : { ...i, image: await findPhoto(i.name).catch(() => '') })))
+      const base = await Promise.all(merged.map(async (i) => (i.image ? i : { ...i, image: await findPhoto(i.name).catch(() => '') })))
+      // 비짓제주: 레저 업체·시설 + 한국관광공사 목록에 없는 관광지 (같은 이름은 빼고). 키가 없거나 응답이 없으면 건너뜀
+      const facilities = await listFacilities().catch(() => [])
+      const visit = await listVisitSpots([...base.map((i) => i.name), ...candidates.map((c) => c.name)]).catch(() => [])
+      const items = [...base, ...facilities, ...visit].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
       const tally = (key, items_) => items_.reduce((a, i) => ((a[i[key]] = (a[i[key]] ?? 0) + 1), a), {})
-      const groupAll = tally('group', candidates)
+      const groupAll = { ...tally('group', candidates), leisure: facilities.length }
       const groupSel = tally('group', items)
       return {
         source: 'tourapi',
@@ -208,7 +216,7 @@ export async function listSpots({ n } = {}) {
         groups: Object.entries(GROUPS).map(([key, g]) => ({ key, label: g.label, color: g.color, count: groupSel[key] ?? 0, total: groupAll[key] ?? 0 })),
         regions: Object.entries(tally('region', items)).map(([key, c]) => ({ key, count: c })),
         items,
-        note: `한국관광공사 TourAPI에 등록된 제주 관광지 ${candidates.length}곳 중 분류와 위치가 고르게 퍼지도록 ${items.length - items.filter((i) => i.extra).length}곳을 골랐고, 널리 알려진 해수욕장·해변 ${items.filter((i) => i.extra).length}곳을 더했어요.`,
+        note: `한국관광공사 TourAPI에 등록된 제주 관광지 ${candidates.length}곳${base.length - base.filter((i) => i.extra).length < candidates.length ? ` 중 분류와 위치가 고르게 퍼지도록 ${base.length - base.filter((i) => i.extra).length}곳을 골랐고` : ' 전부와'}, 널리 알려진 해수욕장·해변 ${base.filter((i) => i.extra).length}곳${facilities.length || visit.length ? `, 비짓제주의 관광지 ${visit.length}곳과 레저 업체·시설 ${facilities.length}곳` : ''}을 더했어요.`,
       }
     } catch {
       return { source: 'unavailable', count: 0, items: [], note: '한국관광공사 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.' }

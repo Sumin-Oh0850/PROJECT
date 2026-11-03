@@ -12,7 +12,7 @@ export default function Surf() {
 
   return (
     <>
-      <PageHeader icon="water" title="서핑" subtitle="제주 해변별 서핑 포인트와 서핑 업체를 모아 봤어요" note="(업체 방문 전 연락을 권장드립니다.)" />
+      <PageHeader icon="water" title="서핑시설" subtitle="제주 해변별 서핑 포인트와 서핑 업체를 모아 봤어요" note="(업체 방문 전 연락을 권장드립니다.)" />
 
       <Card className="mb-4">
         <Card.Body>

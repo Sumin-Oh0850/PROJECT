@@ -18,6 +18,20 @@ export const SITES = [
   { id: 'hado', name: '하도해변', activity: 'surfing', lat: 33.5100, lng: 126.8930, facing_deg: 30,
     note: '수심이 얕고 잔잔한 편. 해녀 체험마을과 같은 동네' },
 
+  // 서핑 활동이 알려진 해변 (해변 방향 정보가 없어 facing_deg 는 null → 오프쇼어 안내는 나오지 않음)
+  { id: 'hyeopjae', name: '협재해변', activity: 'surfing', lat: 33.3940, lng: 126.2400, facing_deg: null,
+    note: '에메랄드빛 바다와 비양도가 보이는 서쪽 해변. 금능해변과 맞붙어 있음' },
+  { id: 'geumneung', name: '금능해변', activity: 'surfing', lat: 33.3895, lng: 126.2356, facing_deg: null,
+    note: '협재와 이어진 해변. 넓은 야영장과 샤워시설이 있음' },
+  { id: 'hamdeok', name: '함덕해변', activity: 'surfing', lat: 33.5432, lng: 126.6699, facing_deg: null,
+    note: '넓고 맑은 북동쪽 해변. 가을·겨울에 파도가 좋은 편' },
+  { id: 'samyang', name: '삼양해변', activity: 'surfing', lat: 33.5255, lng: 126.5853, facing_deg: null,
+    note: '공항에서 가까운 검은모래 해변. 서핑숍이 많고 초심자에게 알맞음' },
+  { id: 'sehwa', name: '세화해변', activity: 'surfing', lat: 33.5250, lng: 126.8604, facing_deg: null,
+    note: '동쪽 구좌읍의 해변. 월정리·하도와 가까움' },
+  { id: 'hwasun', name: '화순금모래해변', activity: 'surfing', lat: 33.2404, lng: 126.3332, facing_deg: null,
+    note: '송악산·마라도가 보이는 남쪽 해변. 파도는 계절·너울에 따라 달라짐' },
+
   // ---------------- 윈드서핑 ----------------
   { id: 'sinyang', name: '신양섭지코지해변', activity: 'windsurfing', lat: 33.4360, lng: 126.9200, facing_deg: 150,
     note: '바람이 꾸준해 윈드서핑·카이트서핑 명소로 알려짐' },

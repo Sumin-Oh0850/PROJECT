@@ -12,6 +12,7 @@
     "test:judge": "node scripts/test-judge.mjs",
     "test:tools": "node scripts/test-tools.mjs",
     "test:spots": "node scripts/test-spots.mjs",
+    "test:sea": "node scripts/test-seaindex.mjs",
     "test:favorites": "node scripts/test-favorites.mjs"
   },
   "dependencies": {

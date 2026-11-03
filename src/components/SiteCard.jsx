@@ -24,7 +24,7 @@ export default function SiteCard({ judgement: j, onSave, onLocate }) {
 
         <div className="mt-auto d-flex gap-2">
           <Button as={Link} to={`/sites/${j.id}`} size="sm" variant="primary" className="flex-grow-1">
-            자세히 <i className="bi bi-chevron-right" />
+            상세 <i className="bi bi-chevron-right" />
           </Button>
           {onLocate && (
             <Button size="sm" variant="outline-secondary" onClick={onLocate} title="지도에서 보기" aria-label={`${j.site} 지도에서 보기`}>

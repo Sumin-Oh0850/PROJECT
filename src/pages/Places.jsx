@@ -11,7 +11,7 @@ const PAGE = 24
 const JEJU_BOUNDS = [[33.1, 126.15], [33.6, 126.98]] // 처음 보이는 범위: 제주 본섬 (추자도는 지도를 옮기면 보임)
 const REGIONS = ['', '제주시', '서귀포시']
 
-// 관광지·해변: 한국관광공사 관광지 중 분류·위치가 고르게 퍼지도록 고른 약 100곳 + 지도
+// 관광지: 한국관광공사 관광지 중 분류·위치가 고르게 퍼지도록 고른 약 100곳 + 해변 + 비짓제주 레저 시설 + 지도
 export default function Places() {
   const addFavorite = useAppStore((s) => s.addFavorite)
   const [data, setData] = useState(null)
@@ -44,8 +44,11 @@ export default function Places() {
       (!word || `${i.name} ${i.address} ${i.category}`.toLowerCase().includes(word)))
   }, [items, group, region, q])
 
-  // 지도 마커 = 지금 필터에 걸린 곳
-  const markers = useMemo(() => filtered.map((i) => ({
+  // 지도 핀: "전체"(분류를 고르지 않고 검색도 안 한 상태)에서는 천 곳이 넘어 지도가 가려지므로 핀을 보여 주지 않는다.
+  // 분류를 고르거나 검색하면 그 결과가 핀으로 나오고, 카드의 "지도에서 보기"를 누르면 그 곳 핀 하나만 나온다.
+  const showPins = group !== '' || q.trim() !== ''
+  const pinned = useMemo(() => (showPins ? filtered : items.filter((i) => i.id === focus?.id)), [showPins, filtered, items, focus])
+  const markers = useMemo(() => pinned.map((i) => ({
     id: i.id,
     lat: i.lat,
     lng: i.lng,
@@ -53,13 +56,13 @@ export default function Places() {
     tooltip: i.name,
     popup: {
       title: i.name,
-      lines: [`${i.group_label} · ${i.category}`, `${i.region} · ${i.address}`],
+      lines: [`${i.group_label} · ${i.category}`, `${i.region} · ${i.address}`, ...(i.near ? [`가까운 서핑 장소 ${i.near.name} ${i.near.km}km`] : [])],
       actions: [
         { label: '즐겨찾기', variant: 'btn-outline-primary', onClick: () => addFavorite({ source: i.is_beach ? 'beach' : 'tour', id: i.id, title: i.name }) },
         { label: '큰 지도', variant: 'btn-outline-secondary', href: i.map_url },
       ],
     },
-  })), [filtered, colorOf, addFavorite])
+  })), [pinned, colorOf, addFavorite])
 
   const locate = (id) => {
     mapBox.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -69,7 +72,7 @@ export default function Places() {
 
   return (
     <>
-      <PageHeader icon="umbrella" title="관광지·해변" subtitle="제주 곳곳의 관광지와 해변을 지도와 목록으로 보여 줘요" />
+      <PageHeader icon="umbrella" title="관광지" subtitle="제주 곳곳의 관광지·해변·레저 시설을 지도와 목록으로 보여 줘요" />
 
       <ErrorAlert error={error} />
       {loading && <Loading text="관광지를 불러오는 중..." />}
@@ -113,12 +116,13 @@ export default function Places() {
 
           {/* 지도 */}
           <div ref={mapBox} className="mb-4">
-            <MapView markers={markers} focus={focus} bounds={JEJU_BOUNDS} height={420} radius={8} label="제주 관광지·해변 지도" />
+            <MapView markers={markers} focus={focus} bounds={JEJU_BOUNDS} height={420} radius={8} label="제주 관광지 지도" />
             <div className="d-flex flex-wrap gap-3 mt-2 small text-muted" aria-label="범례">
               {data.groups.map((g) => (
                 <span key={g.key}><i className="bi bi-circle-fill me-1" style={{ color: g.color }} />{g.label}</span>
               ))}
             </div>
+            {!showPins && <div className="small text-muted mt-1"><i className="bi bi-info-circle me-1" />전체에서는 핀을 표시하지 않아요. 분류를 고르거나 검색하면 지도에 핀이 나와요.</div>}
           </div>
 
           {/* 목록 */}
@@ -128,7 +132,7 @@ export default function Places() {
                 {filtered.slice(0, shown).map((i) => (
                   <Col key={i.id}>
                     <ItemCard title={i.name} image={i.image} badge={i.group_label} badgeColor={colorOf[i.group]}
-                      subtitle={<>{i.region} · {i.category}<br />{i.address}</>}
+                      subtitle={<>{i.region} · {i.category}<br />{i.address}{i.near && <><br />가까운 서핑 장소 {i.near.name} {i.near.km}km</>}</>}
                       onLocate={() => locate(i.id)}
                       onSave={() => addFavorite({ source: i.is_beach ? 'beach' : 'tour', id: i.id, title: i.name })} />
                   </Col>

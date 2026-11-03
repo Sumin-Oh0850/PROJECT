@@ -47,7 +47,7 @@ export default function Sites() {
 
   return (
     <>
-      <PageHeader icon="geo-alt" title="장소" subtitle="지금 바람·돌풍·파도로 서핑 / 윈드서핑 / 패러글라이딩을 해도 되는지 보여 줘요" />
+      <PageHeader icon="geo-alt" title="서핑" subtitle="지금 바람·돌풍·파도로 서핑 / 윈드서핑 / 패러글라이딩을 해도 되는지 보여 줘요" />
 
       <ButtonGroup className="mb-3 flex-wrap">
         {ACTIVITIES.map((a) => (

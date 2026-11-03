@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createRainFx, createWindFx } from './weatherFx.js';
+import { createSurfer } from './surfer.js';
 
 const VERT = /* glsl */ `
   uniform float uTime;
@@ -79,8 +80,8 @@ const LEVEL_TINT = {
 // 위험도별 물결 낙폭: scale 파고 반영 배율, min~max 낙폭 범위, speed 움직임 속도, chop 잔물결 배율
 const LEVEL_WAVE = {
   go: { scale: 0.8, min: 0.1, max: 0.5, speed: 0.85, chop: 0.8 },
-  caution: { scale: 1.1, min: 0.4, max: 1.1, speed: 1.0, chop: 1.2 },
-  danger: { scale: 1.5, min: 0.9, max: 2.1, speed: 1.25, chop: 1.7 },
+  caution: { scale: 1.0, min: 0.35, max: 0.9, speed: 1.0, chop: 1.1 }, // 절제: 위험이라도 낙폭 상한을 낮게
+  danger: { scale: 1.2, min: 0.7, max: 1.4, speed: 1.15, chop: 1.4 },
 };
 const BASE_DEEP =new THREE.Color('#06284a');
 const BASE_SHALLOW = new THREE.Color('#0e7c86');
@@ -173,7 +174,48 @@ export function createOcean(container, { sea = true } = {}) {
   const windFx = createWindFx();
   const rainFx = createRainFx();
   scene.add(windFx.object, rainFx.object);
-  let clock = 0; // 바람·비 애니메이션 시간
+  let clock = 0; // 바람·비·서퍼 애니메이션 시간
+
+  // 서퍼: 바다가 있을 때만 (패러글라이딩 장소에는 없음). 화면 오른쪽에 작게 두어 정보 글자와 겹치지 않게 함
+  let surfer = null;
+  const lights = [];
+  if (sea) {
+    surfer = createSurfer();
+    scene.add(surfer.object);
+    lights.push(new THREE.HemisphereLight('#cfe7f2', '#0b3a5b', 0.9), new THREE.AmbientLight('#ffffff', 0.35));
+    const sun = new THREE.DirectionalLight('#fff1d6', 0.9);
+    sun.position.set(-4, 8, 6);
+    lights.push(sun);
+    scene.add(...lights);
+  }
+
+  // 수면 높이(CPU): 셰이더 heightAt 과 같은 식 → 서퍼가 파도를 따라 오르내림
+  function heightAt(x, z) {
+    const u = uniforms;
+    const px = x;
+    const py = -z - 30; // 메쉬가 눕혀져 z=-30 에 있으므로
+    const t = u.uTime.value * u.uSpeed.value;
+    const f = u.uFreq.value;
+    let h = Math.sin(px * f * 0.9 + py * f * 0.35 - t) * 0.6 + Math.sin(px * f * 0.5 - py * f * 0.8 - t * 0.8 + 1.7) * 0.4;
+    h *= u.uAmp.value;
+    h += (Math.sin(px * 2.3 + py * 1.7 - u.uTime.value * 1.9) + Math.sin(px * 3.1 - py * 2.6 + u.uTime.value * 2.3)) * 0.5 * u.uChop.value;
+    return h;
+  }
+
+  function stepSurfer(t) {
+    if (!surfer) return;
+    const x = 3.0 + Math.sin(t * 0.17) * 0.8;
+    const z = -5;
+    const dx = 0.7;
+    const slopeX = (heightAt(x + dx, z) - heightAt(x - dx, z)) / (2 * dx);
+    const slopeZ = (heightAt(x, z - dx) - heightAt(x, z + dx)) / (2 * dx);
+    const effort = clamp(uniforms.uAmp.value / 1.4, 0, 1); // 파도가 클수록 더 웅크림
+    surfer.object.scale.setScalar(1.8 + effort * 0.3); // 과하지 않게 상한
+    surfer.object.position.set(x, heightAt(x, z) + 0.02, z);
+    surfer.object.rotation.x = clamp(slopeZ, -0.5, 0.5) * 0.7;
+    surfer.object.rotation.z = -clamp(slopeX, -0.5, 0.5) * 0.7 + Math.sin(t * 0.9) * 0.03;
+    surfer.pose(t, effort);
+  }
 
   let target = initial;
   let rafId = 0;
@@ -205,6 +247,7 @@ export function createOcean(container, { sea = true } = {}) {
     uniforms.uChop.value += (target.chop - uniforms.uChop.value) * a;
     uniforms.uDeep.value.lerp(target.deep, a);
     uniforms.uShallow.value.lerp(target.shallow, a);
+    stepSurfer(clock);
   }
 
   function frame(ts) {
@@ -245,7 +288,13 @@ export function createOcean(container, { sea = true } = {}) {
     supported: true,
     update(cond) {
       target = targetFrom(cond);
-      windFx.set({ ...cond, boost: sea ? 1 : 2 });
+      // 바람 줄기: 위험의 붉은 기는 과해서 '주의'의 은은한 색을 쓰고, 세기는 풍속으로 구분 (풍속은 0.75배로 절제)
+      windFx.set({
+        ...cond,
+        windSpeed: clamp(num(cond.windSpeed, 3), 0, 16) * 0.75, // 풍속 상한 16m/s
+        level: cond.level === 'go' || cond.level == null ? 'go' : 'caution',
+        boost: sea ? 1 : 2,
+      });
       rainFx.set(cond);
       if (reduced) {
         ease(10);
@@ -262,6 +311,10 @@ export function createOcean(container, { sea = true } = {}) {
       material.dispose();
       windFx.dispose();
       rainFx.dispose();
+      if (surfer) {
+        scene.remove(surfer.object, ...lights);
+        surfer.dispose();
+      }
       renderer.dispose();
       renderer.domElement.remove();
     },

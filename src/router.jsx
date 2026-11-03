@@ -16,9 +16,9 @@ import NotFound from './pages/NotFound'
 // 아이콘 이름: https://icons.getbootstrap.com
 export const NAV_ITEMS = [
   { to: '/', label: '홈', icon: 'house' },
-  { to: '/sites', label: '장소', icon: 'geo-alt' },
-  { to: '/places', label: '관광지·해변', icon: 'umbrella' },
-  { to: '/surf', label: '서핑', icon: 'water' },
+  { to: '/sites', label: '서핑', icon: 'geo-alt' },       // 서핑 장소·지금 판정·지도
+  { to: '/surf', label: '서핑시설', icon: 'water' },        // 서핑 업체·시즌 안내
+  { to: '/places', label: '관광지', icon: 'umbrella' },     // 관광지·해변·레저 시설
   { to: '/my', label: '내 즐겨찾기', icon: 'star' },
 ]
 

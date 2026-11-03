@@ -23,7 +23,8 @@ export default function MapView({ markers = [], focus = null, height = 420, radi
 
   // ① 지도는 한 번만 만든다
   useEffect(() => {
-    const map = L.map(boxRef.current, { center: JEJU_CENTER, zoom: 10, scrollWheelZoom: true })
+    // preferCanvas: 마커가 천 개 넘어도 가볍게 그리도록 한 장의 캔버스에 그린다
+    const map = L.map(boxRef.current, { center: JEJU_CENTER, zoom: 10, scrollWheelZoom: true, preferCanvas: true })
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -55,7 +56,7 @@ export default function MapView({ markers = [], focus = null, height = 420, radi
         radius, color: '#fff', weight: 2, fillColor: m.color ?? '#6c757d', fillOpacity: 0.92,
       })
       if (m.tooltip) marker.bindTooltip(m.tooltip, { direction: 'top' })
-      if (m.popup) marker.bindPopup(buildPopup(m.popup))
+      if (m.popup) marker.bindPopup(() => buildPopup(m.popup)) // 눌렀을 때 만든다 (마커가 많아도 처음에 가볍게)
       marker.addTo(layer)
       byIdRef.current.set(m.id, marker)
       points.push([m.lat, m.lng])
@@ -63,6 +64,7 @@ export default function MapView({ markers = [], focus = null, height = 420, radi
 
     // 처음 한 번만 범위를 맞춘다 (이후엔 사용자가 옮긴 위치를 유지)
     if (points.length && !fittedRef.current) {
+      map.invalidateSize() // 마커를 그리는 동안 화면 크기가 바뀌었을 수 있으니 다시 재고 맞춘다
       map.fitBounds(bounds ?? L.latLngBounds(points).pad(0.15))
       fittedRef.current = true
     }

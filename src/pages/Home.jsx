@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Badge, Button, Card, Col, Row } from 'react-bootstrap'
 import { Link, useSearchParams } from 'react-router-dom'
-import { fetchJudgeAll, ping } from '../api/client'
+import { fetchJudgeAll, fetchSeaIndex, ping } from '../api/client'
 import { displayName } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
 import { STATUS_VARIANT, fmt } from '../lib/format'
@@ -38,10 +38,13 @@ export default function Home() {
         <p className="home-message-text">좋은 파도보다 먼저 필요한 것은 안전한 하루입니다.<br />바당타기가 제주의 바람과 파도를 읽어 드릴게요.</p>
       </section>
 
-      <div className="d-flex flex-wrap gap-2 align-items-center mb-4">
-        <span className="fw-bold me-1"><i className="bi bi-cloud-sun me-1" />오늘 날씨</span>
-        <WeatherBadge place="제주시" />
-        <WeatherBadge place="서귀포시" />
+      {/* 제목은 위, 날씨 데이터는 그 아래 줄 */}
+      <div className="mb-4">
+        <div className="fw-bold mb-2"><i className="bi bi-cloud-sun me-1" />오늘 날씨</div>
+        <div className="d-flex flex-wrap gap-2 align-items-center">
+          <WeatherBadge place="제주시" />
+          <WeatherBadge place="서귀포시" />
+        </div>
       </div>
 
       <h5 className="fw-bold mb-3"><i className="bi bi-traffic-light me-2" />지금 현황</h5>
@@ -58,16 +61,21 @@ export default function Home() {
                   </Badge>
                 ))}
               </div>
+              <SeaIndex />
               <Row xs={1} md={2} className="g-2">
                 {overview.list.map((j) => (
                   <Col key={j.id}>
-                    <Link to={`/sites/${j.id}`} className="d-flex justify-content-between align-items-center text-decoration-none text-body border rounded px-3 py-2">
-                      <span>
-                        <b>{j.site}</b> <small className="text-muted">{j.activity}</small>
-                        <div className="small text-muted">풍속 {fmt(j.conditions.wind_ms, 'm/s')} · 돌풍 {fmt(j.conditions.gust_ms, 'm/s')}{j.conditions.wave_m != null && ` · 파도 ${fmt(j.conditions.wave_m, 'm')}`}</div>
-                      </span>
-                      <StatusBadge status={j.status} />
-                    </Link>
+                    {/* 항목 전체를 누르던 방식 → 항목 아래쪽의 긴 "상세" 버튼으로만 이동 */}
+                    <div className="border rounded px-3 py-2 h-100 d-flex flex-column gap-2">
+                      <div className="d-flex justify-content-between align-items-start gap-2">
+                        <span>
+                          <b>{j.site}</b> <small className="text-muted">{j.activity}</small>
+                          <div className="small text-muted">풍속 {fmt(j.conditions.wind_ms, 'm/s')} · 돌풍 {fmt(j.conditions.gust_ms, 'm/s')}{j.conditions.wave_m != null && ` · 파도 ${fmt(j.conditions.wave_m, 'm')}`}</div>
+                        </span>
+                        <span className="flex-shrink-0"><StatusBadge status={j.status} /></span>
+                      </div>
+                      <Button as={Link} to={`/sites/${j.id}`} size="sm" variant="primary" className="w-100 mt-auto" aria-label={`${j.site} 상세 보기`}>상세</Button>
+                    </div>
                   </Col>
                 ))}
               </Row>
@@ -98,6 +106,52 @@ export default function Home() {
         </Card.Body>
       </Card>
     </>
+  )
+}
+
+// 바다 지수: 해양조사원 바다여행 예보의 제주 4개 해역 (글자·아이콘·색을 함께 써서 색만으로 구분하지 않음)
+const SEA_VARIANT = { 매우좋음: 'success', 좋음: 'success', 보통: 'warning', 나쁨: 'danger', 매우나쁨: 'danger' }
+const SEA_ICON = { 매우좋음: 'emoji-smile-fill', 좋음: 'check-circle-fill', 보통: 'dash-circle-fill', 나쁨: 'exclamation-triangle-fill', 매우나쁨: 'x-octagon-fill' }
+
+function SeaIndex() {
+  const [sea, setSea] = useState({ state: 'wait' })
+  useEffect(() => {
+    let alive = true
+    fetchSeaIndex()
+      .then((d) => alive && setSea({ state: 'ok', data: d }))
+      .catch(() => alive && setSea({ state: 'fail' }))
+    return () => { alive = false }
+  }, [])
+
+  if (sea.state === 'wait') return <div className="text-muted small mb-3">바다 지수를 확인하는 중...</div>
+  if (sea.state === 'fail' || !sea.data.items?.length) {
+    return <div className="text-muted small mb-3"><i className="bi bi-info-circle me-1" />{sea.data?.note ?? '바다 지수를 불러오지 못했어요.'}</div>
+  }
+  const { items, note, date, period } = sea.data
+  return (
+    <div className="mb-3">
+      <div className="fw-bold mb-2"><i className="bi bi-water me-1" />바다 지수 <small className="text-muted fw-normal">제주 4개 해역 · {String(date).slice(5).replace('-', '/')} {period}</small></div>
+      <Row xs={2} md={4} className="g-2">
+        {items.map((s) => (
+          <Col key={s.area}>
+            <div className="border rounded px-3 py-2 h-100">
+              <div className="d-flex justify-content-between align-items-center gap-2 mb-1">
+                <b>{s.area.replace(/^제주/, '')}</b>
+                <Badge bg={SEA_VARIANT[s.index] ?? 'secondary'} text={SEA_VARIANT[s.index] === 'warning' ? 'dark' : undefined} className="fw-normal">
+                  <i className={`bi bi-${SEA_ICON[s.index] ?? 'question-circle'} me-1`} />{s.index}
+                </Badge>
+              </div>
+              <div className="small text-muted">
+                수온 {fmt(s.sea_temp_c, '℃')} · 파고 {fmt(s.wave_m, 'm')}<br />
+                풍속 {fmt(s.wind_ms, 'm/s')} · {s.tide || '조석 정보 없음'}<br />
+                {s.weather}
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+      <div className="small text-muted mt-1">{note}</div>
+    </div>
   )
 }
 

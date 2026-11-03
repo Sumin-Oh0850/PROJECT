@@ -25,7 +25,7 @@ for (const t of tools) {
   ok(typeof runTool[t.name] === 'function' && t.description && t.input_schema?.type === 'object', `${t.name}: 정의와 실행 함수가 짝이 맞음`)
 }
 const siteEnum = tools.find((t) => t.name === 'judge_activity').input_schema.properties.site.enum
-ok(siteEnum.length === 8, `장소 ID enum ${siteEnum.length}개 (모델이 없는 장소를 지어내지 못함)`)
+ok(siteEnum.length === 14, `장소 ID enum ${siteEnum.length}개 (모델이 없는 장소를 지어내지 못함)`)
 
 console.log('── 실제 실행 ──')
 const run = async (name, input) => {
@@ -41,7 +41,7 @@ const run = async (name, input) => {
 }
 
 const sites = await run('list_sites', {})
-ok(Array.isArray(sites) && sites.length === 8, 'list_sites: 8곳')
+ok(Array.isArray(sites) && sites.length === 14, 'list_sites: 14곳')
 
 const wind = await run('get_wind_gusts', { site: 'jungmun' })
 ok(typeof wind.wind_ms === 'number' && typeof wind.gust_ms === 'number', `get_wind_gusts: 풍속 ${wind.wind_ms} 돌풍 ${wind.gust_ms} (source ${wind.source})`)
